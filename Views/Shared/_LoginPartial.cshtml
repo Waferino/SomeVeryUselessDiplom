@@ -1,0 +1,17 @@
+@{
+    bool Flag = (bool)ViewData["IsAuthenticated"];
+}
+@if(!Flag)
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li><a asp-area="" asp-controller="Account" asp-action="Login">Войти</a></li>
+    </ul>
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+    <li><a asp-area="" asp-controller="Account" asp-action="Info">Профиль</a></li>
+        <li><a asp-area="" asp-controller="Account" asp-action="Logout">Выйти</a></li>
+    </ul>
+}
+

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Models/ErrorViewModel.fs" />
+    <Compile Include="Models/AppIdentityDbContext.fs"/>
+    <Compile Include="Models/LoginViewModel.fs" />
+    <Compile Include="Models/AboutUserModel.fs" />
+    <Compile Include="Container.fs" />
+    <Compile Include="Models/dbModels/cafedraModels.fs" />
+    <Compile Include="Models/dbModels/HelperClasses.fs" />
+    <Compile Include="Models/Commands.fs" />
+    <Compile Include="Infrastructure/SessionExtensions.fs" />
+    <Compile Include="Models/IMyDBContext.fs" />
+    <Compile Include="Models/CafedraDBContext.fs" />
+    <Compile Include="Controllers/HomeController.fs" />
+    <Compile Include="Controllers/AccountController.fs" />
+    <Compile Include="Startup.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
+    <PackageReference Include="MySql.Data" Version="6.10.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
+  </ItemGroup>  
+
+</Project>

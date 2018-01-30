@@ -1,0 +1,56 @@
+﻿namespace Starikov
+
+open System
+open System.Collections.Generic
+open System.Linq
+open System.Threading.Tasks
+open Microsoft.AspNetCore
+open Microsoft.AspNetCore.Hosting
+open Microsoft.AspNetCore.Builder
+open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.DependencyInjection
+open Microsoft.EntityFrameworkCore
+open Microsoft.AspNetCore.Authentication.Cookies
+open Microsoft.Extensions.DependencyInjection
+
+
+type Startup private () =
+    new (configuration: IConfiguration) as this =
+        Startup() then
+        this.Configuration <- configuration
+    member val Configuration : IConfiguration = null with get, set
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    member this.ConfigureServices(services: IServiceCollection) =
+        // Add framework services.
+        services.AddTransient<IMyDBContext, CafedraDBContext>() |> ignore
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(fun options ->
+            options.LoginPath <- new Microsoft.AspNetCore.Http.PathString("/Account/Login")
+        ) |> ignore
+        //services.AddDbContext<AppIdentityDbContext>(fun options -> options.UseSqlServer(@"Server=(localdb)\\MSSQLLocalDB;Database=Identity;Trusted_Connection=True;MultipleActiveResultSets=true", null)) |> ignore
+        services.AddMvc() |> ignore     //this.Configuration.["Data:Default:ConnectionString"]
+        services.AddMemoryCache() |> ignore
+        services.AddSession() |> ignore
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
+
+        if (env.IsDevelopment()) then
+            app.UseDeveloperExceptionPage() |> ignore
+        else
+            app.UseExceptionHandler("/Home/Error") |> ignore
+        app.UseStatusCodePages() |> ignore
+        app.UseStaticFiles() |> ignore
+
+        app.UseSession() |> ignore
+        //app.UseCookieAuthentication()
+        app.UseAuthentication() |> ignore
+        app.UseMvc(fun routes ->
+            routes.MapRoute(
+                name = "default",
+                template = "{controller=Home}/{action=Index}/{id?}") |> ignore
+            ) |> ignore
+        //app.Run(fun context -> context.Response.WriteAsync("Hello") )
+        
+        ()
+    
