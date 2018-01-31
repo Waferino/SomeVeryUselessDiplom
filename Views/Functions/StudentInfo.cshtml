@@ -1,0 +1,26 @@
+@model IEnumerable<IEnumerable<CSharpDuoTurple>>
+@{
+    ViewData["Title"] = "Студенты ВУЗа";
+    var Head = Model.First();
+}
+<table class="table">
+    <thead>
+    <tr>
+        @foreach(var e in Head)
+        {
+            <th scope="col">@e.PrName</th>
+        }
+    </tr>
+  </thead>
+  <tbody>
+      @foreach(var row in Model)
+      {
+          <tr scope="row" >
+                @foreach(var e in row)
+                {
+                    <td>@e.PrValue</td>
+                }
+          </tr>
+      }
+  </tbody>
+</table>

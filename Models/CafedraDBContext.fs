@@ -23,7 +23,7 @@ type CafedraDBContext() =
                     [|for i = 0 to fields - 1 do
                         yield reader.GetValue(i)|]
                 ret.Add(internArr)
-            ret
+            ret :> seq<obj []>
         member this.GetWhere table def =
             let ret = new List<obj []>()
             use conn = this.GetSqlConnection
@@ -36,7 +36,7 @@ type CafedraDBContext() =
                     [|for i = 0 to fields - 1 do
                         yield reader.GetValue(i)|]
                 ret.Add(internArr)
-            ret            
+            ret :> seq<obj []>            
         member this.Insert table data =
             try
                 use conn = this.GetSqlConnection
@@ -72,12 +72,16 @@ type CafedraDBContext() =
             for v in ct.Get "people" do
                 ret.Add(Commands.Setter (new Starikov.dbModels.Person()) v)
             ret
+        member this.GetStudents =
+            let ct = this :> IBaseSQLCommands
+            let ret = new List<Starikov.dbModels.Person>()
+            seq { for v in ct.Get "student" do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
         member this.Log_People (target: LoginViewModel) =
             let L = target.Login.Split(' ')
             let context = this :> IBaseSQLCommands
             let People = 
                 let qr = context.GetWhere "people" (sprintf "(fam='%s' AND name='%s' AND otchestvo='%s')" L.[0] L.[1] L.[2])
-                if qr.Count >= 1 then qr.[0] |> Some else printfn "Incorrect Login: {%s}!" target.Login; None
+                if (Seq.length <| qr) >= 1 then (Seq.head <| qr) |> Some else printfn "Incorrect Login: {%s}!" target.Login; None
             People |> Option.map ( fun a -> Commands.Setter (new Person()) a )
         member this.LogInForStudent (target: LoginViewModel) =
             let People = (this :> IMyDBContext).Log_People target

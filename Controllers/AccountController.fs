@@ -65,7 +65,7 @@ type AccountController (context: IMyDBContext) =
         //let persPrNames = (acc.Person :> ICafedraEntities).GetNamesOfProperties
         let personVal = acc.Person |> Commands.Getter |> Array.zip ((acc.Person :> ICafedraEntities).GetNamesOfProperties()) |> Array.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
         //let studPrNames = (acc.Student :> ICafedraEntities).GetNamesOfProperties
-        let studVal = acc.Student |> Commands.Getter |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) |> Array.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
+        let studVal = acc.Student |> Commands.Getter |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) |> Array.tail |> Array.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
         let ret = Array.concat (seq { yield personVal; yield studVal})
         this.View(ret)
         
