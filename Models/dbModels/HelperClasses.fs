@@ -7,4 +7,5 @@ type Account () =
     member val Student = defaultof<Student> with get, set
 type CSharpDuoTurple () =
     member val PrName = defaultof<string> with get, set
+    member val PrRealName = defaultof<string> with get, set
     member val PrValue = defaultof<obj> with get, set
