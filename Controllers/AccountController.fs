@@ -62,8 +62,10 @@ type AccountController (context: IMyDBContext) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         let man_id = this.User.Identity.Name
         let acc = this.ctx.GetAccount man_id
-        let personVal = acc.Person |> Commands.Getter |> Array.map (fun (f, s) -> new CSharpDuoTurple(PrName = f, PrValue = s))
-        let studVal = acc.Student |> Commands.Getter |> Array.map (fun (f, s) -> new CSharpDuoTurple(PrName = f, PrValue = s))
+        //let persPrNames = (acc.Person :> ICafedraEntities).GetNamesOfProperties
+        let personVal = acc.Person |> Commands.Getter |> Array.zip acc.Person.GetNamesOfProperties |> Array.map (fun (n, (_, s)) -> new CSharpDuoTurple(PrName = n, PrValue = s))
+        //let studPrNames = (acc.Student :> ICafedraEntities).GetNamesOfProperties
+        let studVal = acc.Student |> Commands.Getter |> Array.zip acc.Student.GetNamesOfProperties |> Array.map (fun (n, (_, s)) -> new CSharpDuoTurple(PrName = n, PrValue = s))
         let ret = Array.concat (seq { yield personVal; yield studVal})
         this.View(ret)
         
