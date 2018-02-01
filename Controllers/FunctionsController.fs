@@ -20,23 +20,27 @@ type FunctionsController (context: IMyDBContext) =
     inherit Controller()
     member val ctx = context with get
     //[<Authorize>]
-    member this.StudentInfo () =
+    member this.GroupInfo () =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        let groups = this.ctx.GetGroups
+        this.View(groups)
+    member this.StudentInfo () =    // VERY SLOW!!! NEED PARALLELING, BUT PROBLEMS IN DB ACCESS 
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         let students = 
             this.ctx.GetStudents 
-            |> Seq.map (fun s -> ((s.id_man).ToString()))
-            |> Seq.map (fun man_id ->
-                                        let acc = this.ctx.GetAccount man_id
+            |> Seq.map (fun s ->
+                                        let acc = this.ctx.GetAccount ((s.id_man).ToString())
                                         let personVal = 
                                             acc.Person 
                                             |> Commands.Getter 
                                             |> Array.zip ((acc.Person :> ICafedraEntities).GetNamesOfProperties())
-                                            |> Array.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
+                                            |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         let studVal = 
                                             acc.Student 
                                             |> Commands.Getter 
                                             |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) 
                                             |> Array.tail 
-                                            |> Array.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
+                                            |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
         this.View(students)
+    

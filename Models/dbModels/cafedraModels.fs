@@ -82,3 +82,19 @@ type Student () =
         //member this.GetValuesOfProperties = [| for pi in (this.GetType()).GetProperties() do yield (pi.Name, pi.GetValue(this)) |]
         member this.GetNamesOfProperties () = 
             [| "УИД Человека"; "Номер зачетки"; "УИД Группы"; "Код плательщика"; "Год поступления"; "Отчислен из группы"; "Номер контракта"; "Код \"1\""; "Дата изменения" |]
+type Group () =
+    member val id_group = defaultof<int> with get, set
+    member val year_postup = defaultof<string> with get, set
+    member val name_group = defaultof<string> with get, set
+    member val form = defaultof<string> with get, set
+    member val kurator = defaultof<string> with get, set
+    member val starosta = defaultof<string> with get, set
+    member val kolvo_studentov = defaultof<System.Nullable<int>> with get, set
+    member val id_specialistic = defaultof<System.Nullable<int>> with get, set
+    member val vipusk = defaultof<System.Nullable<int>> with get, set
+    member val kod1 = defaultof<string> with get, set
+    member val data_change = defaultof<string> with get, set
+    member val year_okonchan = defaultof<string> with get, set
+    interface ICafedraEntities with
+        member this.GetNamesOfProperties () =
+            [| "УИД Группы"; "Год поступления"; "Название группы"; "Форма"; "FK Куратор"; "FK Староста"; "Количество студентов"; "FK специальность"; "Выпуск"; "Код \"1\""; "Дата изменения"; "Год окончания"; |]

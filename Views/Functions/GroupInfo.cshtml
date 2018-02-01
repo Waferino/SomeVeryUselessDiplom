@@ -1,0 +1,9 @@
+@model IEnumerable<Group>
+@{
+    ViewData["Title"] = "Группы ВУЗа";
+}
+
+@foreach(var g in Model)
+{
+    <p>@g.name_group</p>
+}

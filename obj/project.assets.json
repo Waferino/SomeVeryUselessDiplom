@@ -13446,11 +13446,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "J:\\Diplom\\Starikov\\Starikov.fsproj",
+      "projectUniqueName": "C:\\Users\\Igor\\AllAccessIFolder\\VLADIMIR-PC\\fsprojects\\Starikov\\Starikov.fsproj",
       "projectName": "Starikov",
-      "projectPath": "J:\\Diplom\\Starikov\\Starikov.fsproj",
+      "projectPath": "C:\\Users\\Igor\\AllAccessIFolder\\VLADIMIR-PC\\fsprojects\\Starikov\\Starikov.fsproj",
       "packagesPath": "C:\\Users\\Igor\\.nuget\\packages\\",
-      "outputPath": "J:\\Diplom\\Starikov\\obj\\",
+      "outputPath": "C:\\Users\\Igor\\AllAccessIFolder\\VLADIMIR-PC\\fsprojects\\Starikov\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
