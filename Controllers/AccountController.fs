@@ -58,6 +58,9 @@ type AccountController (context: IMyDBContext) =
     member this.Logout () =
         this.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme) |> ignore
         this.RedirectToAction("Index", "Home")
+    member this.ManageAccount () =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.View()
     member this.Info () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         let man_id = this.User.Identity.Name

@@ -12,6 +12,7 @@ type IMyDBContext =
     abstract member GetPeoples : System.Collections.Generic.List<Person>
     abstract member GetStudents : seq<Student>
     abstract member GetGroups : seq<Group>
+    abstract member GetOneGroup : int -> Group option
     abstract member GetGroupStudents : int -> seq<Student>
     abstract member Log_People : LoginViewModel -> Person option
     abstract member LogInForStudent : LoginViewModel -> Account option

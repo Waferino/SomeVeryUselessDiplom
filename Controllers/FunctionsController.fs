@@ -26,6 +26,7 @@ type FunctionsController (context: IMyDBContext) =
         this.View(groups)
     member this.OneGroupInfo (id : int) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["Group_name"] <- this.ctx.GetOneGroup id |> Option.map (fun g -> g.name_group) |> Option.get
         let students = 
             this.ctx.GetGroupStudents id
             |> Seq.map (fun s ->
@@ -62,4 +63,6 @@ type FunctionsController (context: IMyDBContext) =
                                             |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
         this.View(students)
-    
+    member this.CreateEvent () =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.View()

@@ -1,8 +1,9 @@
 @model IEnumerable<IEnumerable<CSharpDuoTurple>>
 @{
-    ViewData["Title"] = "Студенты ВУЗа";
+    ViewData["Title"] = string.Format("Студенты группы {0}", ViewData["Group_name"]);
     var Head = Model.First();
 }
+<h3>@ViewData["Title"]:</h3>
 <table class="table">
     <thead>
     <tr>
