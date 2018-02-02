@@ -24,6 +24,25 @@ type FunctionsController (context: IMyDBContext) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         let groups = this.ctx.GetGroups
         this.View(groups)
+    member this.OneGroupInfo (id : int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        let students = 
+            this.ctx.GetGroupStudents id
+            |> Seq.map (fun s ->
+                                        let acc = this.ctx.GetAccount ((s.id_man).ToString())
+                                        let personVal = 
+                                            acc.Person 
+                                            |> Commands.Getter 
+                                            |> Array.zip ((acc.Person :> ICafedraEntities).GetNamesOfProperties())
+                                            |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
+                                        let studVal = 
+                                            acc.Student 
+                                            |> Commands.Getter 
+                                            |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) 
+                                            |> Array.tail 
+                                            |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
+                                        Array.concat (seq { yield personVal; yield studVal}) )
+        this.View(students)
     member this.StudentInfo () =    // VERY SLOW!!! NEED PARALLELING, BUT PROBLEMS IN DB ACCESS 
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         let students = 

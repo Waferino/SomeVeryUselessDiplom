@@ -78,7 +78,10 @@ type CafedraDBContext() =
             seq { for v in ct.Get "student" do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
         member this.GetGroups =
             let ct = this :> IBaseSQLCommands
-            seq { for v in ct.Get "group" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
+            seq { for v in ct.Get "`group`" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
+        member this.GetGroupStudents id_group =
+            let ct = this :> IBaseSQLCommands
+            seq { for v in ct.GetWhere "student" (sprintf "(id_group='%d')" id_group) do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
         member this.Log_People (target: LoginViewModel) =
             let L = target.Login.Split(' ')
             let context = this :> IBaseSQLCommands
