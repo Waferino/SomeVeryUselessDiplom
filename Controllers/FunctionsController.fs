@@ -63,6 +63,14 @@ type FunctionsController (context: IMyDBContext) =
                                             |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
         this.View(students)
+    [<Authorize>]
     member this.CreateEvent () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
-        this.View()
+        this.View(new Starikov.dbModels.EventInfo())
+    [<Authorize>]
+    [<HttpPost>]
+    member this.CreateEvent (event: EventInfo) =
+    //INSERT INTO `www0005_base`.`eventinfo` (`DateOfThe`, `Name`) VALUES ('2010.11.10', 'Поход на лыжах');
+        let res = this.ctx.InsertEventInfo event
+        if res then printfn "Event: \"%s\" was inserted" event.Name else printfn "Broken inserting Event: \"%s\"" event.Name
+        this.RedirectToAction("Index", "Home")

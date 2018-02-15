@@ -98,3 +98,11 @@ type Group () =
     interface ICafedraEntities with
         member this.GetNamesOfProperties () =
             [| "УИД Группы"; "Год поступления"; "Название группы"; "Форма"; "FK Куратор"; "FK Староста"; "Количество студентов"; "FK специальность"; "Выпуск"; "Код \"1\""; "Дата изменения"; "Год окончания"; |]
+type EventInfo () =
+    member val idEventInfo = defaultof<int> with get, set
+    member val DateOfThe = defaultof<System.Nullable<System.DateTime>> with get, set
+    member val Name = defaultof<string> with get, set
+    member val Notation = defaultof<string> with get, set
+    interface ICafedraEntities with
+        member this.GetNamesOfProperties () =
+            [| "УИД События"; "Ожидаемая дата проведения"; "Название события"; "Примачание к событию" |]

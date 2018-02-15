@@ -57,3 +57,11 @@ C:\Users\Igor\AllAccessIFolder\VLADIMIR-PC\fsprojects\Starikov\bin\Debug\netcore
 C:\Users\Igor\AllAccessIFolder\VLADIMIR-PC\fsprojects\Starikov\obj\Debug\netcoreapp2.0\Starikov.fsprojResolveAssemblyReference.cache
 C:\Users\Igor\AllAccessIFolder\VLADIMIR-PC\fsprojects\Starikov\obj\Debug\netcoreapp2.0\Starikov.dll
 C:\Users\Igor\AllAccessIFolder\VLADIMIR-PC\fsprojects\Starikov\obj\Debug\netcoreapp2.0\Starikov.pdb
+J:\Diplom\heap\Starikov\bin\Debug\netcoreapp2.0\Starikov.deps.json
+J:\Diplom\heap\Starikov\bin\Debug\netcoreapp2.0\Starikov.runtimeconfig.json
+J:\Diplom\heap\Starikov\bin\Debug\netcoreapp2.0\Starikov.runtimeconfig.dev.json
+J:\Diplom\heap\Starikov\bin\Debug\netcoreapp2.0\Starikov.dll
+J:\Diplom\heap\Starikov\bin\Debug\netcoreapp2.0\Starikov.pdb
+J:\Diplom\heap\Starikov\obj\Debug\netcoreapp2.0\Starikov.fsprojResolveAssemblyReference.cache
+J:\Diplom\heap\Starikov\obj\Debug\netcoreapp2.0\Starikov.dll
+J:\Diplom\heap\Starikov\obj\Debug\netcoreapp2.0\Starikov.pdb

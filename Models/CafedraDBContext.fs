@@ -5,6 +5,9 @@ open System.Collections.Generic
 open MySql.Data.MySqlClient
 
 open Starikov.dbModels
+open MySql.Data
+open System.Text.RegularExpressions
+open Microsoft.Data.Edm
 
 type CafedraDBContext() =
     member val ConnectionString = @"server=localhost;userid=root;password=kagura;persistsecurityinfo=True;database=www0005_base" with get, set
@@ -24,6 +27,18 @@ type CafedraDBContext() =
                         yield reader.GetValue(i)|]
                 ret.Add(internArr)
             ret :> seq<obj []>
+        member this.GetFromType tp = 
+            let query = sprintf "SELECT * FROM `%s`" tp.Name
+            use conn = this.GetSqlConnection
+            conn.Open()
+            let cmd = new MySqlCommand(query, conn)
+            use reader = cmd.ExecuteReader()
+            let fields = reader.FieldCount
+            try
+                let ret = seq { while reader.Read() do yield Commands.TypeSetter tp [| for i = 0 to fields - 1 do yield reader.GetValue(i) |] }
+                Some <| (ret :?> seq<'T>)
+            with
+                | _ -> None
         member this.GetWhere table def =
             let ret = new List<obj []>()
             use conn = this.GetSqlConnection
@@ -42,6 +57,7 @@ type CafedraDBContext() =
                 use conn = this.GetSqlConnection
                 conn.Open() //"INSERT INTO table (A, B) VALUES (a, b);"
                 let query = sprintf "INSERT INTO %s VALUES %s;" table data
+                printfn "Insert command: \"%s\"" query
                 let cmd = new MySqlCommand(query, conn)
                 use reader = cmd.ExecuteReader()
                 let mutable ret = ""
@@ -50,7 +66,7 @@ type CafedraDBContext() =
                 conn.Close()
                 ret
             with
-                | :? System.Exception as ex -> ex.Message
+                | :? System.Exception as ex -> raise ex
         member this.Update table data keygen =
             try
                 use conn = this.GetSqlConnection
@@ -65,6 +81,20 @@ type CafedraDBContext() =
                 ret
             with
                 | :? System.Exception as ex -> ex.Message
+        member this.GetPK entity =
+            try
+                use conn = this.GetSqlConnection
+                conn.Open()
+                let query = sprintf "SELECT max(%s) FROM %s;" (entity.GetProperties().[0]).Name entity.Name
+                let cmd = new MySqlCommand(query, conn)
+                use reader = cmd.ExecuteReader()
+                let mutable ret = 0
+                while reader.Read() do 
+                    ret <- reader.GetInt32(0) + 1
+                conn.Close()
+                ret
+            with
+                | ex -> raise ex
     interface IMyDBContext with
         member this.GetPeoples = 
             let ct = this :> IBaseSQLCommands
@@ -79,6 +109,7 @@ type CafedraDBContext() =
         member this.GetGroups =
             let ct = this :> IBaseSQLCommands
             seq { for v in ct.Get "`group`" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
+            //ct.GetFromType <| typeof<Group> |> Option.get
         member this.GetOneGroup id_group =
             let ct = this :> IBaseSQLCommands
             ct.GetWhere "`group`" (sprintf "(id_group='%d')" id_group) |> Seq.tryHead |> Option.map (Commands.Setter (new Starikov.dbModels.Group()))
@@ -121,3 +152,19 @@ type CafedraDBContext() =
                 retAcc.IsStudent <- true
                 retAcc.Student <- student.Value
             retAcc
+        member this.GetEventsInfos =
+            let ct = this :> IBaseSQLCommands
+            ct.Get "eventinfo" |> Seq.map (Commands.Setter (new Starikov.dbModels.EventInfo()))
+        member this.InsertEventInfo einfo =
+            let ct = this :> IBaseSQLCommands
+            let mutable fake = new DateTime()
+            let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), ( if DateTime.TryParse((v.ToString()), &fake) then Commands.ConvertDate <| v.ToString() else sprintf "'%O'" v)) ) |> Array.unzip
+            let tableName = sprintf "`%s`" (einfo.GetType()).Name
+            let fNames = names |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            let fValues = values |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
+            try
+                let res = ct.Insert (sprintf "%s (%s)" tableName fNames) ((sprintf "( '%d" (ct.GetPK <| einfo.GetType())) + fValues.[4..] )
+                printfn "Result: %s" res
+                true
+            with
+                | _ -> false
