@@ -43,3 +43,8 @@ module Commands =
         let ymd = dmy.Split([|'.'|]) |> Array.rev |> Array.fold (fun acc t -> sprintf "%s%s-" acc t) "" |> (fun x -> x.Substring(0, x.Length - 1))
         sprintf "%s %s" ymd tm
     )
+    let SC man_id (a: 'T, dt: 'T) =    //SmartChecker
+        if a <> Unchecked.defaultof<'T> && a <> dt then 
+            printfn "For_Account(%s):\tOld value: %O\t->\tNew value: %O" man_id dt a
+            true
+        else false

@@ -22,3 +22,5 @@ type IMyDBContext =
     abstract member GetAccount : string -> Account
     abstract member GetEventsInfos : seq<EventInfo>
     abstract member InsertEventInfo : EventInfo -> bool
+    abstract member GetAnceteData : string -> Anceta
+    abstract member SetAnceteData : string -> Anceta -> bool

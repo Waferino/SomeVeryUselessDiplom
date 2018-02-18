@@ -60,13 +60,13 @@ type CafedraDBContext() =
                 printfn "Insert command: \"%s\"" query
                 let cmd = new MySqlCommand(query, conn)
                 use reader = cmd.ExecuteReader()
-                let mutable ret = ""
+                let mutable ret = "*"
                 while reader.Read() do 
                     ret <- ret + "*"
                 conn.Close()
                 ret
             with
-                | :? System.Exception as ex -> raise ex
+                | ex -> raise ex
         member this.Update table data keygen =
             try
                 use conn = this.GetSqlConnection
@@ -80,7 +80,7 @@ type CafedraDBContext() =
                 conn.Close()
                 ret
             with
-                | :? System.Exception as ex -> ex.Message
+                | ex -> ex.Message
         member this.GetPK entity =
             try
                 use conn = this.GetSqlConnection
@@ -158,13 +158,115 @@ type CafedraDBContext() =
         member this.InsertEventInfo einfo =
             let ct = this :> IBaseSQLCommands
             let mutable fake = new DateTime()
-            let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), ( if DateTime.TryParse((v.ToString()), &fake) then Commands.ConvertDate <| v.ToString() else sprintf "'%O'" v)) ) |> Array.unzip
-            let tableName = sprintf "`%s`" (einfo.GetType()).Name
-            let fNames = names |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
-            let fValues = values |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
+            let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), ( if DateTime.TryParse((v.ToString()), &fake) then sprintf "'%s'" (Commands.ConvertDate <| v.ToString()) else sprintf "'%O'" v)) ) |> Array.unzip
+            let tableName = sprintf "`www0005_base`.`%s`" (((einfo.GetType()).Name).ToLower())
+            let fNames = names.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            let fValues = values.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
             try
-                let res = ct.Insert (sprintf "%s (%s)" tableName fNames) ((sprintf "( '%d" (ct.GetPK <| einfo.GetType())) + fValues.[4..] )
+                let res = ct.Insert (sprintf "%s (%s)" tableName fNames) fValues //((sprintf "( '%d" (ct.GetPK <| einfo.GetType())) + fValues.[4..] )
                 printfn "Result: %s" res
                 true
             with
                 | _ -> false
+        member this.GetAnceteData man_id =
+            let ct = this :> IBaseSQLCommands
+            let abPerson = ct.GetWhere "`people`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abStudent = ct.GetWhere "`student`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
+            let abGroup = if abStudent.id_group.HasValue then (ct.GetWhere "`group`" (sprintf "(id_group='%d')" abStudent.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
+            let ret = //new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo, group = abGroup.name_group, birthdate = DateTime.Parse(abPerson.data_rojdeniya), grajdanstvo = abPerson.nacionalnost, voinskii_uchet = abPerson.nomer_vb, education = abPerson.chto_zakonchil, family_status = abPerson.semeinoe_polojenie, (*Childrens = ,*) pasport_serial = abPerson.serial_pasport, pasport_number = abPerson.number_pasport, pasport_getter = (sprintf "%s %s" abPerson.data_vidachi_pasporta abPerson.kem_vidan), (*pasport_code = ,*) inn = abPerson.INN, PFRF = abPerson.sv_vo_PFR, pIndex = abPerson.index_1, pRegion = abPerson.region_1, pCity = abPerson.gorod_1, (*pDistrict = ,*) pStreet = abPerson.ulica_1, pHome = abPerson.dom_1, pRoom = abPerson.kv_1, fIndex = abPerson.index_2, fRegion = abPerson.region_2, fCity = abPerson.gorod_2, (*fDistrict = ,*) fStreet = abPerson.ulica_2, fHome = abPerson.dom_2, fRoom = abPerson.kv_2, d_tel = abPerson.telefon_dom, m_tel = abPerson.telefon_sot, (*alter_lang = ,*) (*Bonuses = ,*) (*educationType = ,*) dealNumber = abStudent.number_kontrakta (*, dealStartDate = ,*) (*whoPay = ,*) (*pastSport = ,*) (*presantSport = ,*) (*futureSport = ,*) (*motherContact = ,*) (*fatherContact = ,*) )
+                let a = new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo)
+                a.group <- abGroup.name_group
+                a.birthdate <- abPerson.data_rojdeniya
+                a.grajdanstvo <- abPerson.nacionalnost
+                a.voinskii_uchet <- abPerson.nomer_vb
+                a.education <- abPerson.chto_zakonchil
+                a.family_status <- abPerson.semeinoe_polojenie
+                (*a.Childrens <- ,*)
+                a.pasport_serial <- abPerson.serial_pasport
+                a.pasport_number <- abPerson.number_pasport
+                a.pasport_getter <- (sprintf "%s %s" abPerson.data_vidachi_pasporta abPerson.kem_vidan)
+                (*a.pasport_code <- ,*)
+                a.inn <- abPerson.INN
+                a.PFRF <- abPerson.sv_vo_PFR
+                a.pIndex <- abPerson.index_1
+                a.pRegion <- abPerson.region_1
+                a.pCity <- abPerson.gorod_1
+                (*a.pDistrict <- ,*)
+                a.pStreet <- abPerson.ulica_1
+                a.pHome <- abPerson.dom_1
+                a.pRoom <- abPerson.kv_1
+                a.fIndex <- abPerson.index_2
+                a.fRegion <- abPerson.region_2
+                a.fCity <- abPerson.gorod_2
+                (*a.fDistrict = ,*)
+                a.fStreet <- abPerson.ulica_2
+                a.fHome <- abPerson.dom_2
+                a.fRoom <- abPerson.kv_2
+                a.d_tel <- abPerson.telefon_dom
+                a.m_tel <- abPerson.telefon_sot
+                (*a.alter_lang <- ,*)
+                (*a.Bonuses <- ,*)
+                (*a.educationType <- ,*)
+                a.dealNumber <- abStudent.number_kontrakta
+                (*, a.dealStartDate <- ,*) (*a.whoPay <- ,*) (*a.pastSport <- ,*) (*a.presantSport <- ,*) (*a.futureSport <- ,*) (*a.motherContact <- ,*) (*a.fatherContact <- ,*)
+                a
+            ret
+        member this.SetAnceteData man_id a =
+            let ct = this :> IBaseSQLCommands
+            let abP = ct.GetWhere "`people`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abS = ct.GetWhere "`student`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
+            let abG = if abS.id_group.HasValue then (ct.GetWhere "`group`" (sprintf "(id_group='%d')" abS.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
+            let mct = this :> IMyDBContext
+            let da = mct.GetAnceteData man_id
+            let check = Commands.SC man_id
+
+            if check (a.lastname, da.lastname) then abP.fam <- a.lastname
+            if check (a.name, da.name) then abP.name <- a.name
+            if check (a.patron, da.patron) then abP.otchestvo <- a.patron
+            if check (a.group, da.group) then abS.id_group <- a.group |> (fun gname ->
+                                                                            let f = mct.GetGroups |> Seq.filter (fun t -> (t.name_group.ToLower()) = (gname.ToLower()))
+                                                                            let ret = f |> Seq.tryHead |> Option.map (fun h -> h.id_group)
+                                                                            if ret.IsSome then (new System.Nullable<int>(ret.Value)) else abS.id_group
+                                                                         )
+            if check (a.birthdate, da.birthdate) then abP.data_rojdeniya <- a.birthdate
+            if check (a.grajdanstvo, da.grajdanstvo) then abP.nacionalnost <- a.grajdanstvo
+            if check (a.voinskii_uchet, da.voinskii_uchet) then abP.nomer_vb <- a.voinskii_uchet
+            if check (a.education, da.education) then abP.chto_zakonchil <- a.education
+            if check (a.family_status, da.family_status) then abP.semeinoe_polojenie <- a.family_status
+            //if check (a.Childrens, da.Childrens) then abP. <- a.Childrens
+            if check (a.pasport_serial, da.pasport_serial) then abP.serial_pasport <- a.pasport_serial
+            if check (a.pasport_number, da.pasport_number) then abP.number_pasport <- a.pasport_number
+            //if check (a.pasport_getter, da.pasport_getter) then abP. <- a.pasport_getter
+            //if check (a.pasport_code, da.pasport_code) then abP. <- a.pasport_code
+            if check (a.inn, da.inn) then abP.INN <- a.inn
+            if check (a.PFRF, da.PFRF) then abP.sv_vo_PFR <- a.PFRF
+            if check (a.pIndex, da.pIndex) then abP.index_1 <- a.pIndex
+            if check (a.pRegion, da.pRegion) then abP.region_1 <- a.pRegion
+            if check (a.pCity, da.pCity) then abP.gorod_1 <- a.pCity
+            //if check (a.pDistrict, da.pDistrict) then abP. <- a.pDistrict
+            if check (a.pStreet, da.pStreet) then abP.ulica_1 <- a.pStreet
+            if check (a.pHome, da.pHome) then abP.dom_1 <- a.pHome
+            if check (a.pRoom, da.pRoom) then abP.kv_1 <- a.pRoom
+            if check (a.fIndex, da.fIndex) then abP.index_2 <- a.fIndex
+            if check (a.fRegion, da.fRegion) then abP.region_2 <- a.fRegion
+            if check (a.fCity, da.fCity) then abP.gorod_2 <- a.fCity
+            //if check (a.fDistrict, da.fDistrict) then abP. <- a.fDistrict
+            if check (a.fStreet, da.fStreet) then abP.ulica_2 <- a.fStreet
+            if check (a.fHome, da.fHome) then abP.dom_2 <- a.fHome
+            if check (a.fRoom, da.fRoom) then abP.kv_2 <- a.fRoom
+            if check (a.d_tel, da.d_tel) then abP.telefon_dom <- a.d_tel
+            if check (a.m_tel, da.m_tel) then abP.telefon_sot <- a.m_tel
+            //if check (a.alter_lang, da.alter_lang) then abP. <- a.alter_lang
+            //if check (a.Bonuses, da.Bonuses) then abP. <- a.Bonuses
+            //if check (a.educationType, da.educationType) then abP. <- a.educationType
+            //if check (a.dealNumber, da.dealNumber) then abP. <- a.dealNumber
+            //if check (a.dealStartDate, da.dealStartDate) then abP. <- a.dealStartDate
+            //if check (a.whoPay, da.whoPay) then abP. <- a.whoPay
+            //if check (a.pastSport, da.pastSport) then abP. <- a.pastSport
+            //if check (a.presantSport, da.presantSport) then abP. <- a.presantSport
+            //if check (a.futureSport, da.futureSport) then abP. <- a.futureSport
+            //if check (a.motherContact, da.motherContact) then abP. <- a.motherContact
+            //if check (a.fatherContact, da.fatherContact) then abP. <- a.fatherContact
+            //Commands.SC man_id (anceta.birthdate.ToString(), defaultAnceta.birthdate.ToString(), &abPerson.data_rojdeniya)
+            
+            true

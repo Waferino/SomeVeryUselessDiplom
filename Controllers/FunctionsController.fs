@@ -74,3 +74,12 @@ type FunctionsController (context: IMyDBContext) =
         let res = this.ctx.InsertEventInfo event
         if res then printfn "Event: \"%s\" was inserted" event.Name else printfn "Broken inserting Event: \"%s\"" event.Name
         this.RedirectToAction("Index", "Home")
+    [<Authorize>]
+    member this.StudentAnceta () =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.View(this.ctx.GetAnceteData <| this.User.Identity.Name)
+    [<Authorize>]
+    [<HttpPost>]
+    member this.StudentAnceta (ancet: Anceta) =
+        let res = this.ctx.SetAnceteData this.User.Identity.Name ancet
+        this.RedirectToAction("Index", "Home")

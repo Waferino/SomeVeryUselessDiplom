@@ -29,7 +29,7 @@ type AccountController (context: IMyDBContext) =
 
     [<HttpPost>]
     [<AllowAnonymous>]
-    member this.Login (Login : string, Identity: string) =
+    member this.Login (logInfo: LoginViewModel) =
         let Authenticate user_id role =
             let claims = new List<Claim>()
             claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, (user_id |> string)))
@@ -38,22 +38,17 @@ type AccountController (context: IMyDBContext) =
             this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id))
         let ActionForCorrectLogined _Login = printfn "\"%s\" is entered!" _Login; this.RedirectToAction("Index", "Home")
         let ActionForWrongLogined = printfn "Wrong Login or Identity!"; this.RedirectToAction("Login", "Account", "Wrong!")
-        if Login = null || Identity = null || Login = "" || Identity = "" then ActionForWrongLogined
+        if logInfo.Login = null || logInfo.Identity = null || logInfo.Login = "" || logInfo.Identity = "" then ActionForWrongLogined
         else
-            let target = 
-                let ret = new LoginViewModel()
-                ret.Login <- Login
-                ret.Identity <- Identity
-                ret
-            match this.ctx.LogInForStudent target with
+            match this.ctx.LogInForStudent logInfo with
                 | Some(x) -> 
                     Authenticate x.Person.id_man "student" |> ignore
-                    ActionForCorrectLogined Login
+                    ActionForCorrectLogined logInfo.Login
                 | None -> 
-                    match this.ctx.LogInForCurator target with
+                    match this.ctx.LogInForCurator logInfo with
                         | Some(x) -> 
                             Authenticate x.Person.id_man "curator" |> ignore
-                            ActionForCorrectLogined Login
+                            ActionForCorrectLogined logInfo.Login
                         | None -> ActionForWrongLogined
     member this.Logout () =
         this.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme) |> ignore

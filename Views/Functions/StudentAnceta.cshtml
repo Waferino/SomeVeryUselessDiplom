@@ -1,0 +1,247 @@
+@model Anceta
+@{
+    ViewData["Title"] = "Анкета";   //http://localhost:55455/Functions/StudentAnceta
+}
+<div class="panel-body">
+  <form asp-controller="Functions" asp-action="StudentAnceta" method="POST" >
+      <fieldset>
+          <legend class="row">АНКЕТА</legend>
+          <div class="form-group row">
+              <label class="col-md-2 control-label">Ф.И.О.:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="lastname" value="@Model.lastname" placeholder="Фамилия" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="name" value="@Model.name" placeholder="Имя" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="patron" value="@Model.patron" placeholder="Отчество" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="group" class="col-md-2 control-label">Группа:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="group" value="@Model.group" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="birthdate" class="col-md-2 control-label">Дата рождения:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input type="date" class="form-control" asp-for="birthdate" value=@Model.birthdate title="@Model.birthdate" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="grajdanstvo" class="col-md-2 control-label">Гражданство:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="grajdanstvo" value="@Model.grajdanstvo" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="voinskii_uchet" class="col-md-2 control-label" title="Наличие военного билета">Постановка на воинский учет:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="voinskii_uchet" value="@Model.voinskii_uchet" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="education" class="col-md-2 control-label" title="В каком году, где, какое учебное заведение окончили; при наличии средне-специального образования – указать специальность">Образование:</label>
+              <div>
+                  <div class="col-md-4">
+                      <input class="form-control" asp-for="education" value="@Model.education" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="family_status" class="col-md-2 control-label">Семейное положение:</label>
+              <div>
+                  <div class="col-md-4">
+                      <input class="form-control" asp-for="family_status" value="@Model.family_status" placeholder="замужем / не замужем, женат / холост" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="Childrens" class="col-md-2 control-label">Дети:</label>
+              <div class="col-md-4">
+                  <textarea class="form-control" asp-for="Childrens" rows="3" placeholder="Ф.И.О., дата рождения ребенка">@Model.Childrens</textarea>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label">Паспортные данные:</label>
+              <div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="pasport_serial" value="@Model.pasport_serial" placeholder="Серия" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="pasport_number" value="@Model.pasport_number" placeholder="Номер" />
+                  </div>
+                  <div class="col-md-3">
+                      <input class="form-control" asp-for="pasport_getter" value="@Model.pasport_getter" placeholder="Когда и кем выдан" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="pasport_code" value="@Model.pasport_code" placeholder="Код подразделения" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="inn" class="col-md-2 control-label" title="">ИНН:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="inn" value="@Model.inn" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="PFRF" class="col-md-2 control-label" title="Номер">Свидетельство о постановке на учет в Пенсионном фонде РФ:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="PFRF" value="@Model.PFRF" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label" title="Если проживаете по прописке - адрес фактического проживания можно не заполнять">Адрес прописки:</label>
+              <div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="pIndex" value="@Model.pIndex" placeholder="Индекс" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="pRegion" value="@Model.pRegion" placeholder="Область(край)" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="pCity" value="@Model.pCity" placeholder="Город" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="pDistrict" value="@Model.pDistrict" placeholder="Район" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="pStreet" value="@Model.pStreet" placeholder="Улица" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="pHome" value="@Model.pHome" placeholder="Дом" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="pRoom" value="@Model.pRoom" placeholder="Квартира" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label" title="">Адрес проживания:</label>
+              <div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="fIndex" value="@Model.fIndex" placeholder="Индекс" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="fRegion" value="@Model.fRegion" placeholder="Область(край)" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="fCity" value="@Model.fCity" placeholder="Город" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="fDistrict" value="@Model.fDistrict" placeholder="Район" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="fStreet" value="@Model.fStreet" placeholder="Улица" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="fHome" value="@Model.fHome" placeholder="Дом" />
+                  </div>
+                  <div class="col-md-1">
+                      <input class="form-control" asp-for="fRoom" value="@Model.fRoom" placeholder="Квартира" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="d_tel" class="col-md-2 control-label" title="">Телефон домашний:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="d_tel" value="@Model.d_tel" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="m_tel" class="col-md-2 control-label" title="">Телефон мобильный:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="m_tel" value="@Model.m_tel" required />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="alter_lang" class="col-md-2 control-label" title="">Изучаемый иностранный язык:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="alter_lang" value="@Model.alter_lang" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="Bonuses" class="col-md-2 control-label" title="Инвалид, сирота, участник боевых действий и др. - указать">Наличие льгот:</label>
+              <div>
+                  <div class="col-md-2">
+                      <textarea class="form-control" asp-for="Bonuses" rows="2">@Model.Bonuses</textarea>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label for="educationType" class="col-md-2 control-label" title="">Форма обучения:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="educationType" value="@Model.educationType" placeholder="бюджет/контракт" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label" title="">При контрактной форме обучения:</label>
+              <div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="dealNumber" value="@Model.dealNumber" placeholder="Договор №" />
+                  </div>
+                  <div class="col-md-2">
+                      <input type="date" class="form-control" asp-for="dealStartDate" value="@Model.dealStartDate" title="договор от '_'_____201_г" />
+                  </div>
+                  <div class="col-md-2">
+                      <input class="form-control" asp-for="whoPay" value="@Model.whoPay" placeholder="Имя/название" title="Имя (название) физического (юридического) лица, являющегося плательщиком за оказание образовательных услуг согласно договору" />
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label" title="">Спорт в Вашей жизни:</label>
+              <div>
+                  <div class="col-md-2">
+                      <textarea class="form-control" asp-for="pastSport" rows="3" placeholder="Каким видом спорта Вы занимались в школе">@Model.pastSport</textarea>
+                  </div>
+                  <div class="col-md-2">
+                      <textarea class="form-control" asp-for="presantSport" rows="3" placeholder="Каким видом спорта Вы занимаетесь в настоящее время">@Model.presantSport</textarea>
+                  </div>
+                  <div class="col-md-2">
+                      <textarea class="form-control" asp-for="futureSport" rows="3" placeholder="Каким видом спорта Вы желали бы заниматься в будущем">@Model.futureSport</textarea>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label class="col-md-2 control-label" title="">Контактные лица:</label>
+              <div>
+                  <div class="col-md-3">
+                      <textarea class="form-control" asp-for="motherContact" rows="3" placeholder="Ф.И.О. матери, кем и где работает, телефон рабочий">@Model.motherContact</textarea>
+                  </div>
+                  <div class="col-md-3">
+                      <textarea class="form-control" asp-for="fatherContact" rows="3" placeholder="Ф.И.О. отца, кем и где работает, телефон рабочий">@Model.fatherContact</textarea>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group row">
+              <label>&nbsp;</label>
+              <input type="submit" value="Подтвердить" class="btn btn-primary" />
+          </div>
+      </fieldset>
+  </form>
+</div>
