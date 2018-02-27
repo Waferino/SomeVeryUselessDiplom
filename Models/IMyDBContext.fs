@@ -3,7 +3,9 @@ namespace Starikov
 open System
 open Starikov.dbModels
 type IBaseSQLCommands =
+    abstract member Execute : string -> string
     abstract member Get : string -> seq<obj []>
+    abstract member Get : 'T -> seq<'T>
     abstract member GetFromType : System.Type -> seq<'T> option
     abstract member GetWhere : string -> string -> seq<obj []>
     abstract member Insert : string -> string -> string
@@ -11,7 +13,7 @@ type IBaseSQLCommands =
     abstract member GetPK : System.Type -> int
 
 type IMyDBContext =
-    abstract member GetPeoples : System.Collections.Generic.List<Person>
+    abstract member GetPeoples : seq<Person>
     abstract member GetStudents : seq<Student>
     abstract member GetGroups : seq<Group>
     abstract member GetOneGroup : int -> Group option

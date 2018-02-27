@@ -63,14 +63,21 @@ type FunctionsController (context: IMyDBContext) =
                                             |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
         this.View(students)
+    member this.EventsInfo () =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        let EventsInfos = this.ctx.GetEventsInfos
+        let retD = EventsInfos |> Seq.filter (fun ei -> ei.DateOfThe.HasValue) |> Seq.sortBy (fun ei -> ei.DateOfThe.Value)
+        let retU = EventsInfos |> Seq.filter (fun ei -> not <| ei.DateOfThe.HasValue) |> Seq.sortBy (fun ei -> ei.Name)
+        let ret = seq { for ei in retD -> ei
+                        for ei in retU -> ei }
+        this.View(ret)
     [<Authorize>]
     member this.CreateEvent () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         this.View(new Starikov.dbModels.EventInfo())
     [<Authorize>]
     [<HttpPost>]
-    member this.CreateEvent (event: EventInfo) =
-    //INSERT INTO `www0005_base`.`eventinfo` (`DateOfThe`, `Name`) VALUES ('2010.11.10', 'Поход на лыжах');
+    member this.CreateEvent (event: EventInfo) = //INSERT INTO `www0005_base`.`eventinfo` (`DateOfThe`, `Name`) VALUES ('2010.11.10', 'Поход на лыжах');
         let res = this.ctx.InsertEventInfo event
         if res then printfn "Event: \"%s\" was inserted" event.Name else printfn "Broken inserting Event: \"%s\"" event.Name
         this.RedirectToAction("Index", "Home")

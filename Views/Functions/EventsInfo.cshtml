@@ -1,0 +1,10 @@
+﻿@model IEnumerable<EventInfo>
+@{
+    ViewData["Title"] = "EventsInfo";
+}
+
+@foreach(var ei in Model)
+{
+    <h2>@ei.Name - @ei.DateOfThe</h2>
+}
+

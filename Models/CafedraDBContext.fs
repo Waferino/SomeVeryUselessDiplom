@@ -13,11 +13,24 @@ type CafedraDBContext() =
     member val ConnectionString = @"server=localhost;userid=root;password=kagura;persistsecurityinfo=True;database=www0005_base" with get, set
     member private __.GetSqlConnection = new MySqlConnection(__.ConnectionString)
     interface IBaseSQLCommands with
+        member this.Execute query =
+            try
+                use conn = this.GetSqlConnection
+                conn.Open()
+                let cmd = new MySqlCommand(query, conn)
+                use reader = cmd.ExecuteReader()
+                let mutable ret = "*"
+                while reader.Read() do 
+                    ret <- ret + "*"
+                conn.Close()
+                ret
+            with
+                | ex -> raise ex
         member this.Get table = 
             let ret = new List<obj []>()
             use conn = this.GetSqlConnection
             conn.Open()
-            let cmd = new MySqlCommand((sprintf "SELECT * FROM %s" table), conn)
+            let cmd = new MySqlCommand((sprintf "SELECT * FROM `%s`" table), conn)
             use reader = cmd.ExecuteReader()
             let fields = reader.FieldCount
             while reader.Read() do
@@ -27,6 +40,10 @@ type CafedraDBContext() =
                         yield reader.GetValue(i)|]
                 ret.Add(internArr)
             ret :> seq<obj []>
+        member this.Get (t: 'T) =
+            let tp = t.GetType()
+            (this :> IBaseSQLCommands).Get tp.Name
+            |> Seq.map (fun v -> (Commands.TypeSetter tp v) :?> 'T)
         member this.GetFromType tp = 
             let query = sprintf "SELECT * FROM `%s`" tp.Name
             use conn = this.GetSqlConnection
@@ -43,7 +60,7 @@ type CafedraDBContext() =
             let ret = new List<obj []>()
             use conn = this.GetSqlConnection
             conn.Open()
-            let cmd = new MySqlCommand((sprintf "SELECT * FROM %s WHERE %s" table def), conn)
+            let cmd = new MySqlCommand((sprintf "SELECT * FROM `%s` WHERE %s" table def), conn)
             use reader = cmd.ExecuteReader()
             let fields = reader.FieldCount
             while reader.Read() do
@@ -56,7 +73,7 @@ type CafedraDBContext() =
             try
                 use conn = this.GetSqlConnection
                 conn.Open() //"INSERT INTO table (A, B) VALUES (a, b);"
-                let query = sprintf "INSERT INTO %s VALUES %s;" table data
+                let query = sprintf "INSERT INTO `%s` VALUES %s;" table data
                 printfn "Insert command: \"%s\"" query
                 let cmd = new MySqlCommand(query, conn)
                 use reader = cmd.ExecuteReader()
@@ -71,7 +88,7 @@ type CafedraDBContext() =
             try
                 use conn = this.GetSqlConnection
                 conn.Open() //"INSERT INTO table (A, B) VALUES (a, b);"
-                let query = sprintf "UPDATE %s SET %s WHERE %s;" table data keygen
+                let query = sprintf "UPDATE `%s` SET %s WHERE %s;" table data keygen
                 let cmd = new MySqlCommand(query, conn)
                 use reader = cmd.ExecuteReader()
                 let mutable ret = ""
@@ -98,21 +115,18 @@ type CafedraDBContext() =
     interface IMyDBContext with
         member this.GetPeoples = 
             let ct = this :> IBaseSQLCommands
-            let ret = new List<Starikov.dbModels.Person>()
-            for v in ct.Get "people" do
-                ret.Add(Commands.Setter (new Starikov.dbModels.Person()) v)
-            ret
+            ct.Get (new Starikov.dbModels.Person())
         member this.GetStudents =
             let ct = this :> IBaseSQLCommands
             //let ret = new List<Starikov.dbModels.Person>()
             seq { for v in ct.Get "student" do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
         member this.GetGroups =
             let ct = this :> IBaseSQLCommands
-            seq { for v in ct.Get "`group`" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
+            seq { for v in ct.Get "group" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
             //ct.GetFromType <| typeof<Group> |> Option.get
         member this.GetOneGroup id_group =
             let ct = this :> IBaseSQLCommands
-            ct.GetWhere "`group`" (sprintf "(id_group='%d')" id_group) |> Seq.tryHead |> Option.map (Commands.Setter (new Starikov.dbModels.Group()))
+            ct.GetWhere "group" (sprintf "(id_group='%d')" id_group) |> Seq.tryHead |> Option.map (Commands.Setter (new Starikov.dbModels.Group()))
         member this.GetGroupStudents id_group =
             let ct = this :> IBaseSQLCommands
             seq { for v in ct.GetWhere "student" (sprintf "(id_group='%d')" id_group) do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
@@ -154,7 +168,7 @@ type CafedraDBContext() =
             retAcc
         member this.GetEventsInfos =
             let ct = this :> IBaseSQLCommands
-            ct.Get "eventinfo" |> Seq.map (Commands.Setter (new Starikov.dbModels.EventInfo()))
+            ct.Get (new Starikov.dbModels.EventInfo())
         member this.InsertEventInfo einfo =
             let ct = this :> IBaseSQLCommands
             let mutable fake = new DateTime()
@@ -170,53 +184,56 @@ type CafedraDBContext() =
                 | _ -> false
         member this.GetAnceteData man_id =
             let ct = this :> IBaseSQLCommands
-            let abPerson = ct.GetWhere "`people`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
-            let abStudent = ct.GetWhere "`student`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
-            let abGroup = if abStudent.id_group.HasValue then (ct.GetWhere "`group`" (sprintf "(id_group='%d')" abStudent.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
+            let NC target = if target = null then "" else target
+            let abPerson = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abStudent = ct.GetWhere "student" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
+            let abGroup = if abStudent.id_group.HasValue then (ct.GetWhere "group" (sprintf "(id_group='%d')" abStudent.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
             let ret = //new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo, group = abGroup.name_group, birthdate = DateTime.Parse(abPerson.data_rojdeniya), grajdanstvo = abPerson.nacionalnost, voinskii_uchet = abPerson.nomer_vb, education = abPerson.chto_zakonchil, family_status = abPerson.semeinoe_polojenie, (*Childrens = ,*) pasport_serial = abPerson.serial_pasport, pasport_number = abPerson.number_pasport, pasport_getter = (sprintf "%s %s" abPerson.data_vidachi_pasporta abPerson.kem_vidan), (*pasport_code = ,*) inn = abPerson.INN, PFRF = abPerson.sv_vo_PFR, pIndex = abPerson.index_1, pRegion = abPerson.region_1, pCity = abPerson.gorod_1, (*pDistrict = ,*) pStreet = abPerson.ulica_1, pHome = abPerson.dom_1, pRoom = abPerson.kv_1, fIndex = abPerson.index_2, fRegion = abPerson.region_2, fCity = abPerson.gorod_2, (*fDistrict = ,*) fStreet = abPerson.ulica_2, fHome = abPerson.dom_2, fRoom = abPerson.kv_2, d_tel = abPerson.telefon_dom, m_tel = abPerson.telefon_sot, (*alter_lang = ,*) (*Bonuses = ,*) (*educationType = ,*) dealNumber = abStudent.number_kontrakta (*, dealStartDate = ,*) (*whoPay = ,*) (*pastSport = ,*) (*presantSport = ,*) (*futureSport = ,*) (*motherContact = ,*) (*fatherContact = ,*) )
                 let a = new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo)
-                a.group <- abGroup.name_group
-                a.birthdate <- abPerson.data_rojdeniya
-                a.grajdanstvo <- abPerson.nacionalnost
-                a.voinskii_uchet <- abPerson.nomer_vb
+                a.group <- NC abGroup.name_group
+                a.birthdate <- NC abPerson.data_rojdeniya
+                a.grajdanstvo <- NC abPerson.nacionalnost
+                a.voinskii_uchet <- NC abPerson.nomer_vb
                 a.education <- abPerson.chto_zakonchil
-                a.family_status <- abPerson.semeinoe_polojenie
-                (*a.Childrens <- ,*)
-                a.pasport_serial <- abPerson.serial_pasport
-                a.pasport_number <- abPerson.number_pasport
-                a.pasport_getter <- (sprintf "%s %s" abPerson.data_vidachi_pasporta abPerson.kem_vidan)
-                (*a.pasport_code <- ,*)
-                a.inn <- abPerson.INN
-                a.PFRF <- abPerson.sv_vo_PFR
-                a.pIndex <- abPerson.index_1
-                a.pRegion <- abPerson.region_1
-                a.pCity <- abPerson.gorod_1
-                (*a.pDistrict <- ,*)
-                a.pStreet <- abPerson.ulica_1
-                a.pHome <- abPerson.dom_1
-                a.pRoom <- abPerson.kv_1
-                a.fIndex <- abPerson.index_2
-                a.fRegion <- abPerson.region_2
-                a.fCity <- abPerson.gorod_2
-                (*a.fDistrict = ,*)
-                a.fStreet <- abPerson.ulica_2
-                a.fHome <- abPerson.dom_2
-                a.fRoom <- abPerson.kv_2
-                a.d_tel <- abPerson.telefon_dom
-                a.m_tel <- abPerson.telefon_sot
-                (*a.alter_lang <- ,*)
-                (*a.Bonuses <- ,*)
-                (*a.educationType <- ,*)
-                a.dealNumber <- abStudent.number_kontrakta
-                (*, a.dealStartDate <- ,*) (*a.whoPay <- ,*) (*a.pastSport <- ,*) (*a.presantSport <- ,*) (*a.futureSport <- ,*) (*a.motherContact <- ,*) (*a.fatherContact <- ,*)
+                a.family_status <- NC abPerson.semeinoe_polojenie
+                (*a.Childrens <- NC ,*)
+                a.pasport_serial <- NC abPerson.serial_pasport
+                a.pasport_number <- NC abPerson.number_pasport
+                a.pasport_date <- NC abPerson.data_vidachi_pasporta
+                a.pasport_getter <- NC abPerson.kem_vidan
+                (*a.pasport_code <- NC ,*)
+                a.inn <- NC abPerson.INN
+                a.PFRF <- NC abPerson.sv_vo_PFR
+                a.pIndex <- NC abPerson.index_1
+                a.pRegion <- NC abPerson.region_1
+                a.pCity <- NC abPerson.gorod_1
+                (*a.pDistrict <- NC ,*)
+                a.pStreet <- NC abPerson.ulica_1
+                a.pHome <- NC abPerson.dom_1
+                a.pRoom <- NC abPerson.kv_1
+                a.fIndex <- NC abPerson.index_2
+                a.fRegion <- NC abPerson.region_2
+                a.fCity <- NC abPerson.gorod_2
+                (*a.fDistrict <- NC ,*)
+                a.fStreet <- NC abPerson.ulica_2
+                a.fHome <- NC abPerson.dom_2
+                a.fRoom <- NC abPerson.kv_2
+                a.d_tel <- NC abPerson.telefon_dom
+                a.m_tel <- NC abPerson.telefon_sot
+                (*a.alter_lang <- NC ,*)
+                (*a.Bonuses <- NC ,*)
+                (*a.educationType <- NC ,*)
+                a.dealNumber <- NC abStudent.number_kontrakta
+                (*, a.dealStartDate <- NC ,*) (*a.whoPay <- NC ,*) (*a.pastSport <- NC ,*) (*a.presantSport <- NC ,*) (*a.futureSport <- NC ,*) (*a.motherContact <- NC ,*) (*a.fatherContact <- NC ,*)
                 a
             ret
         member this.SetAnceteData man_id a =
             let ct = this :> IBaseSQLCommands
-            let abP = ct.GetWhere "`people`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
-            let abS = ct.GetWhere "`student`" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
-            let abG = if abS.id_group.HasValue then (ct.GetWhere "`group`" (sprintf "(id_group='%d')" abS.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
+            let abP = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abS = ct.GetWhere "student" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
+            let abG = if abS.id_group.HasValue then (ct.GetWhere "group" (sprintf "(id_group='%d')" abS.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
             let mct = this :> IMyDBContext
+            let gnames = mct.GetGroups |> Seq.map (fun g -> g.name_group) |> Seq.toList
             let da = mct.GetAnceteData man_id
             let check = Commands.SC man_id
 
@@ -224,7 +241,8 @@ type CafedraDBContext() =
             if check (a.name, da.name) then abP.name <- a.name
             if check (a.patron, da.patron) then abP.otchestvo <- a.patron
             if check (a.group, da.group) then abS.id_group <- a.group |> (fun gname ->
-                                                                            let f = mct.GetGroups |> Seq.filter (fun t -> (t.name_group.ToLower()) = (gname.ToLower()))
+                                                                            let cname = Checker.Choose gname gnames
+                                                                            let f = mct.GetGroups |> Seq.filter (fun t -> t.name_group = cname)
                                                                             let ret = f |> Seq.tryHead |> Option.map (fun h -> h.id_group)
                                                                             if ret.IsSome then (new System.Nullable<int>(ret.Value)) else abS.id_group
                                                                          )
@@ -236,7 +254,8 @@ type CafedraDBContext() =
             //if check (a.Childrens, da.Childrens) then abP. <- a.Childrens
             if check (a.pasport_serial, da.pasport_serial) then abP.serial_pasport <- a.pasport_serial
             if check (a.pasport_number, da.pasport_number) then abP.number_pasport <- a.pasport_number
-            //if check (a.pasport_getter, da.pasport_getter) then abP. <- a.pasport_getter
+            if check (a.pasport_date, da.pasport_date) then abP.data_vidachi_pasporta <- a.pasport_date
+            if check (a.pasport_getter, da.pasport_getter) then abP.kem_vidan <- a.pasport_getter
             //if check (a.pasport_code, da.pasport_code) then abP. <- a.pasport_code
             if check (a.inn, da.inn) then abP.INN <- a.inn
             if check (a.PFRF, da.PFRF) then abP.sv_vo_PFR <- a.PFRF
