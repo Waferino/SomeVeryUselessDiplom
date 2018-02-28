@@ -14,6 +14,7 @@ open Starikov
 open Starikov.dbModels
 open Microsoft.Extensions.DependencyModel.Resolution
 open Microsoft.AspNetCore.Mvc.ModelBinding
+open Microsoft.AspNetCore.Http.Extensions
 
 
 type FunctionsController (context: IMyDBContext) =
@@ -78,9 +79,25 @@ type FunctionsController (context: IMyDBContext) =
     [<Authorize>]
     [<HttpPost>]
     member this.CreateEvent (event: EventInfo) = //INSERT INTO `www0005_base`.`eventinfo` (`DateOfThe`, `Name`) VALUES ('2010.11.10', 'Поход на лыжах');
-        let res = this.ctx.InsertEventInfo event
-        if res then printfn "Event: \"%s\" was inserted" event.Name else printfn "Broken inserting Event: \"%s\"" event.Name
-        this.RedirectToAction("Index", "Home")
+        let sei = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = event.id_EventInfo) |> Seq.tryHead
+        if sei.IsNone then
+            let res = this.ctx.InsertEventInfo event
+            res |> ignore
+        else 
+            let ei = sei.Value
+            let query, logs = QueryBuilder.BuildUpdateQuery ei event
+            (this.ctx :?> IBaseSQLCommands).Execute query logs |> ignore
+        //if res then printfn "Event: \"%s\" was inserted" event.Name else printfn "Broken inserting Event: \"%s\"" event.Name
+        this.RedirectToAction("EventsInfo")
+    [<Authorize>]
+    member this.EditEventInfo (id: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        let ei = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = id) |> Seq.head
+        this.View(ei)
+    [<Authorize>]
+    member this.RemoveEventInfo (id: int) =
+        let res = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = id) |> Seq.head |> this.ctx.Remove
+        this.RedirectToAction("EventsInfo")
     [<Authorize>]
     member this.StudentAnceta () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated

@@ -14042,9 +14042,6 @@
   },
   "project": {
     "version": "1.0.0",
-    "restoreSettings": {
-      "hideWarningsAndErrors": true
-    },
     "restore": {
       "projectUniqueName": "C:\\Users\\Igor\\AllAccessIFolder\\VLADIMIR-PC\\fsprojects\\Starikov\\Starikov.fsproj",
       "projectName": "Starikov",

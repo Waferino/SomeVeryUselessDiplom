@@ -97,15 +97,37 @@ module QueryBuilderHelper =
             | s1, s2 when Seq.isEmpty <| s1 && Seq.isEmpty <| s2 -> values, logs
             | d, t ->
                 let (dpi, dv), (_, tv) = Seq.head <| d, Seq.head <| t
-                if dv = tv then builder values logs (Seq.tail <| d, Seq.tail <| t)
+                if dv = tv || tv |> isNull then builder values logs (Seq.tail <| d, Seq.tail <| t)
                 else builder (sprintf "%s,`%s`='%O'" values dpi.Name tv) ((sprintf "CHANGE IN `%s`: FROM '%O' TO '%O'" dpi.Name dv tv) :: logs) (Seq.tail <| d, Seq.tail <| t)
         let ret1, logs = builder "" [] (dl', tl')
         ret1.Substring(1), logs
     //let rec W acc = function | s when Seq.isEmpty <| s -> acc | s -> W ((Seq.head <| s) :: acc) (Seq.tail <| s)
 module QueryBuilder =
     let BuildUpdateQuery old neo =
-        let values, LogList = QueryBuilderHelper.GetUpdateCommand old neo
+        let values, Logs = QueryBuilderHelper.GetUpdateCommand old neo
         let T = old.GetType()
         let table = T.Name
         let id_name, id_value = QueryBuilderHelper.GetID old
-        (sprintf "UPDATE `%s` SET (%s) WHERE `%s`='%O'" table values id_name id_value), LogList
+        (sprintf "UPDATE `%s` SET %s WHERE `%s`='%O'" table values id_name id_value), (Logs |> List.fold (fun st s -> sprintf "%s{%s}" st s ) (sprintf "{|%s|}" table))
+    let BuildDeleteQuery entity =
+        let T = entity.GetType()
+        let logs = QueryBuilderHelper.GetPropertiesAndValues entity |> Seq.fold (fun st (pi, v) -> sprintf "%s{`%s`: '%O'}" st pi.Name v ) (sprintf "{|%s|}" T.Name)
+        let id_name, id_value = QueryBuilderHelper.GetID entity
+        (sprintf "DELETE FROM `%s` WHERE `%s`='%O'" T.Name id_name id_value), logs
+module Logs =
+    open System
+    open System.IO
+
+    let _logDirectory = Path.Combine(AppContext.BaseDirectory, "logs")
+    let _logFile = Path.Combine(_logDirectory, (sprintf "%d_%d_%d.txt" System.DateTime.Now.Year System.DateTime.Now.Month System.DateTime.Now.Day ))
+    let add logText =
+        if not <| Directory.Exists(_logDirectory) then Directory.CreateDirectory(_logDirectory) |> ignore
+        if not <| File.Exists(_logFile) then File.Create(_logFile).Dispose()
+        File.AppendAllText(_logFile, (sprintf "%s\n" logText))
+        printfn "%s" logText
+    let add_Log msg =
+        let logText = sprintf "%s: <|%A|>" (System.DateTime.UtcNow.ToString("hh:mm:ss")) msg
+        add logText
+    let add_ExtLog query logs =
+        let logText = sprintf "%s: <|%s|> <|%A|>" (System.DateTime.UtcNow.ToString("hh:mm:ss")) logs query
+        add logText

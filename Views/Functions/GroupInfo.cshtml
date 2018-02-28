@@ -6,7 +6,7 @@
 <table class="table">
     <thead>
     <tr>
-      <th scope="col">#</th>
+      <!--<th scope="col">#</th>-->
       <th scope="col">Название группы</th>
       <th scope="col"></th>
     </tr>
@@ -15,7 +15,7 @@
     @foreach(var g in Model)
     {
     <tr>
-      <th scope="row">@g.id_group</th>
+      <!--<th scope="row">@g.id_group</th>-->
       <td>@g.name_group</td>
       <td><a asp-controller="Functions" asp-action="OneGroupInfo" asp-route-id=@g.id_group class="btn btn-primary" >Перейти</a></td>
     </tr>

@@ -1,0 +1,7 @@
+05:32:37: <|{|EventInfo|}{CHANGE IN `Notation`: FROM 'event' TO 'ДЕНЮХА!'}|> <|"UPDATE `EventInfo` SET `Notation`='ДЕНЮХА!' WHERE `id_EventInfo`='2'"|>
+05:34:12: <|{|EventInfo|}{`id_EventInfo`: '9'}{`DateOfThe`: '28.02.2018 0:00:00'}{`Name`: 'new event'}{`Notation`: 'null'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='9'"|>
+05:34:48: <|{|EventInfo|}{`id_EventInfo`: '4'}{`DateOfThe`: '10.11.2010 0:00:00'}{`Name`: 'Поход в лес'}{`Notation`: '<null>'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='4'"|>
+05:35:31: <|{|EventInfo|}{`id_EventInfo`: '7'}{`DateOfThe`: '04.04.2018 0:00:00'}{`Name`: 'Сдача курсача по ИТ'}{`Notation`: 'К этому времени должен будет на 100% дописан диплом'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='7'"|>
+05:35:33: <|{|EventInfo|}{`id_EventInfo`: '10'}{`DateOfThe`: '01.03.2018 0:00:00'}{`Name`: 'new event'}{`Notation`: 'null'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='10'"|>
+05:35:35: <|{|EventInfo|}{`id_EventInfo`: '8'}{`DateOfThe`: '28.02.2018 0:00:00'}{`Name`: 'creating event'}{`Notation`: 'not null string'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='8'"|>
+05:35:38: <|{|EventInfo|}{`id_EventInfo`: '1'}{`DateOfThe`: '14.08.1993 0:00:00'}{`Name`: 'My birthdate'}{`Notation`: 'I was born!'}|> <|"DELETE FROM `EventInfo` WHERE `id_EventInfo`='1'"|>

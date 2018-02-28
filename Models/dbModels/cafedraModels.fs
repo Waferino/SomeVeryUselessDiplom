@@ -102,7 +102,7 @@ type EventInfo () =
     member val id_EventInfo = defaultof<int> with get, set
     member val DateOfThe = defaultof<System.Nullable<System.DateTime>> with get, set
     member val Name = defaultof<string> with get, set
-    member val Notation = defaultof<string> with get, set
+    member val Notation = defaultof<string> with get, set //System.Nullable<>
     interface ICafedraEntities with
         member this.GetNamesOfProperties () =
             [| "УИД События"; "Ожидаемая дата проведения"; "Название события"; "Примачание к событию" |]

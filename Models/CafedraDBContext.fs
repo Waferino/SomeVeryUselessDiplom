@@ -8,12 +8,13 @@ open Starikov.dbModels
 open MySql.Data
 open System.Text.RegularExpressions
 open Microsoft.Data.Edm
+open Microsoft.AspNetCore.Http.Extensions
 
 type CafedraDBContext() =
     member val ConnectionString = @"server=localhost;userid=root;password=kagura;persistsecurityinfo=True;database=www0005_base" with get, set
     member private __.GetSqlConnection = new MySqlConnection(__.ConnectionString)
     interface IBaseSQLCommands with
-        member this.Execute query =
+        member this.Execute query logs =
             try
                 use conn = this.GetSqlConnection
                 conn.Open()
@@ -23,9 +24,12 @@ type CafedraDBContext() =
                 while reader.Read() do 
                     ret <- ret + "*"
                 conn.Close()
+                Logs.add_ExtLog query logs
                 ret
             with
-                | ex -> raise ex
+                | ex -> 
+                    printfn "QUERY: %s" query
+                    raise ex
         member this.Get table = 
             let ret = new List<obj []>()
             use conn = this.GetSqlConnection
@@ -69,11 +73,11 @@ type CafedraDBContext() =
                         yield reader.GetValue(i)|]
                 ret.Add(internArr)
             ret :> seq<obj []>            
-        member this.Insert table data =
+        member this.Insert table props data =
             try
                 use conn = this.GetSqlConnection
                 conn.Open() //"INSERT INTO table (A, B) VALUES (a, b);"
-                let query = sprintf "INSERT INTO `%s` VALUES %s;" table data
+                let query = sprintf "INSERT INTO `%s` %s VALUES %s;" table props data
                 printfn "Insert command: \"%s\"" query
                 let cmd = new MySqlCommand(query, conn)
                 use reader = cmd.ExecuteReader()
@@ -81,6 +85,7 @@ type CafedraDBContext() =
                 while reader.Read() do 
                     ret <- ret + "*"
                 conn.Close()
+                Logs.add_Log query
                 ret
             with
                 | ex -> raise ex
@@ -95,6 +100,7 @@ type CafedraDBContext() =
                 while reader.Read() do 
                     ret <- ret + "*"
                 conn.Close()
+                Logs.add_Log query
                 ret
             with
                 | ex -> ex.Message
@@ -113,6 +119,10 @@ type CafedraDBContext() =
             with
                 | ex -> raise ex
     interface IMyDBContext with
+        member this.Remove entity =
+            let ct = this :> IBaseSQLCommands
+            let query, logs = QueryBuilder.BuildDeleteQuery entity
+            ct.Execute query logs
         member this.GetPeoples = 
             let ct = this :> IBaseSQLCommands
             ct.Get (new Starikov.dbModels.Person())
@@ -173,11 +183,11 @@ type CafedraDBContext() =
             let ct = this :> IBaseSQLCommands
             let mutable fake = new DateTime()
             let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), ( if DateTime.TryParse((v.ToString()), &fake) then sprintf "'%s'" (Commands.ConvertDate <| v.ToString()) else sprintf "'%O'" v)) ) |> Array.unzip
-            let tableName = sprintf "`www0005_base`.`%s`" (((einfo.GetType()).Name).ToLower())
+            let tableName = sprintf "%s" (((einfo.GetType()).Name).ToLower())
             let fNames = names.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
             let fValues = values.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
             try
-                let res = ct.Insert (sprintf "%s (%s)" tableName fNames) fValues //((sprintf "( '%d" (ct.GetPK <| einfo.GetType())) + fValues.[4..] )
+                let res = ct.Insert tableName (sprintf "(%s)" fNames) fValues //((sprintf "( '%d" (ct.GetPK <| einfo.GetType())) + fValues.[4..] )
                 printfn "Result: %s" res
                 true
             with

@@ -34,7 +34,7 @@ type Startup private () =
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
-
+        //let bd = sprintf "%s" AppContext.BaseDirectory
         if (env.IsDevelopment()) then
             app.UseDeveloperExceptionPage() |> ignore
         else
