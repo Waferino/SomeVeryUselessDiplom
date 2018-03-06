@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore
@@ -12,6 +13,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.EntityFrameworkCore
 open Microsoft.AspNetCore.Authentication.Cookies
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.FileProviders
 
 
 type Startup private () =
@@ -24,11 +26,14 @@ type Startup private () =
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
         services.AddTransient<IMyDBContext, CafedraDBContext>() |> ignore
+        services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))) |> ignore
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(fun options ->
             options.LoginPath <- new Microsoft.AspNetCore.Http.PathString("/Account/Login")
         ) |> ignore
         //services.AddDbContext<AppIdentityDbContext>(fun options -> options.UseSqlServer(@"Server=(localdb)\\MSSQLLocalDB;Database=Identity;Trusted_Connection=True;MultipleActiveResultSets=true", null)) |> ignore
         services.AddMvc() |> ignore     //this.Configuration.["Data:Default:ConnectionString"]
+        services.AddAuthorization(fun option -> option.AddPolicy("CuratorOnly", (fun policy -> policy.RequireClaim("PSTU_Role", "curator") |> ignore))) |> ignore
+        //services.AddAuthorization(fun option -> option.AddPolicy("StudentOnly", (fun policy -> policy.RequireClaim("PSTU_Role", "student") |> ignore))) |> ignore
         services.AddMemoryCache() |> ignore
         services.AddSession() |> ignore
 

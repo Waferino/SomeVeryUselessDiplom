@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "Upload file"; //@model 
+    //bool IsAuthenticated = (bool)ViewData["IsAuthenticated"];
+}
+<div class="panel-body">
+    <form asp-controller="FileLoader" asp-action="UploadFile" method="post" enctype="multipart/form-data">
+        <div class="form-group row">
+            <input type="file" name="file" class="btn btn-primary btn-file" /> <!-- <span class="btn btn-default btn-file"> BROWSE <input/> </span> -->
+        </div>
+        <button type="submit" class="btn btn-primary" >Upload File</button>
+    </form>
+</div>

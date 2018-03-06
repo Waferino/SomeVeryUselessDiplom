@@ -1,6 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Главная страница"; //@model 
     bool IsAuthenticated = (bool)ViewData["IsAuthenticated"];
+    bool IsStudent = (bool)ViewData["IsStudent"];
 }
 
 <h3>Доступный функционал:</h3>
@@ -14,33 +15,36 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Информация о группах</td>
-      <td><a asp-controller="Functions" asp-action="GroupInfo" class="btn btn-primary" >Перейти</a></td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Информация о студентах</td>
-      <td><a asp-controller="Functions" asp-action="StudentInfo" class="btn btn-primary" >Перейти</a></td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>Информация о мероприятиях</td>
-      <td><a asp-controller="Functions" asp-action="EventsInfo" class="btn btn-primary" >Перейти</a></td>
-    </tr>
-    @if(IsAuthenticated)
+      <tr>
+          <th scope="row">1</th>
+          <td>Информация о группах</td>
+          <td><a asp-controller="Functions" asp-action="GroupInfo" class="btn btn-primary">Перейти</a></td>
+      </tr>
+      <tr>
+          <th scope="row">2</th>
+          <td>Информация о студентах</td>
+          <td><a asp-controller="Functions" asp-action="StudentInfo" class="btn btn-primary">Перейти</a></td>
+      </tr>
+      <tr>
+          <th scope="row">3</th>
+          <td>Информация о мероприятиях</td>
+          <td><a asp-controller="Functions" asp-action="EventsInfo" class="btn btn-primary">Перейти</a></td>
+      </tr>
+      @if(IsAuthenticated)
     {
-      <tr>
-        <th scope="row">4</th>
-        <td>Создать мероприятие</td>
-        <td><a asp-controller="Functions" asp-action="CreateEvent" class="btn btn-primary" >Перейти</a></td>
-      </tr>
-      <tr>
-          <th scope="row">5</th>
-          <td>Заполнить анкету</td>
-          <td><a asp-controller="Functions" asp-action="StudentAnceta" class="btn btn-primary">Перейти</a></td>
-      </tr>
+  <tr>
+      <th scope="row">4</th>
+      <td>Создать мероприятие</td>
+      <td><a asp-controller="Functions" asp-action="CreateEvent" class="btn btn-primary">Перейти</a></td>
+  </tr>
+  @if(IsStudent)
+      {
+  <tr>
+      <th scope="row">5</th>
+      <td>Заполнить анкету</td>
+      <td><a asp-controller="Functions" asp-action="StudentAnceta" class="btn btn-primary">Перейти</a></td>
+  </tr>
+        }
     }
-</tbody>
+  </tbody>
 </table>

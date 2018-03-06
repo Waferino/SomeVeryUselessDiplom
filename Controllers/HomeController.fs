@@ -22,6 +22,8 @@ type HomeController (context: IMyDBContext) =
     member this.Index () =
         let IsAuthenticated = this.User.Identity.IsAuthenticated 
         this.ViewData.["IsAuthenticated"] <- IsAuthenticated
+        this.ViewData.["IsStudent"] <- this.User.Claims |> Commands.IsStudent
+        this.User.Claims |> Commands.ShowClaims
         if IsAuthenticated then 
             let AccountInfo = this.User.Identity.Name |> this.ctx.GetAccount
             this.ViewData.["AccountInfo"] <- AccountInfo
@@ -31,7 +33,7 @@ type HomeController (context: IMyDBContext) =
         this.ViewData.["Message"] <- "Your application description page."
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         this.View()
-
+    //[<Authorize(Policy = "CuratorOnly")>] //It's WORK!!!
     member this.Contact () =
         this.ViewData.["Message"] <- "Igor Starikov"
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated

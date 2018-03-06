@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Не главная страница";
+    //bool IsAuthenticated = (bool)ViewData["IsAuthenticated"];
+    var files = (IEnumerable<string>)ViewData["files"];
+    var SL = new SelectList(files);
+}
+<div class="panel-body">
+    <form asp-controller="FileLoader" asp-action="GetFile" method="get">
+        <div class="form-group row">
+            <label for="filename" class="col-md-2 control-label" >Выберете файл: </label>
+            <select id="files" name="filename" class="form-control" asp-items="@SL">
+                <option>Select file</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Download File</button>
+    </form>
+</div>

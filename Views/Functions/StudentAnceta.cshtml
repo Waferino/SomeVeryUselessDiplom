@@ -1,6 +1,8 @@
 @model Anceta
 @{
     ViewData["Title"] = "Анкета";   //http://localhost:55455/Functions/StudentAnceta
+    var groups = (IEnumerable<string>)ViewData["Groups"];
+    var SLgroups = new SelectList(groups);
 }
 <div class="panel-body">
   <form asp-controller="Functions" asp-action="StudentAnceta" method="POST" >
@@ -24,7 +26,9 @@
               <label for="group" class="col-md-2 control-label">Группа:</label>
               <div>
                   <div class="col-md-2">
-                      <input class="form-control" asp-for="group" value="@Model.group" />
+                      <select class="form-control" asp-for="group" asp-items="@SLgroups" >
+                          <option>@Model.group</option>
+                      </select>
                   </div>
               </div>
           </div>

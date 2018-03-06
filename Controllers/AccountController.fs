@@ -33,7 +33,7 @@ type AccountController (context: IMyDBContext) =
         let Authenticate user_id role =
             let claims = new List<Claim>()
             claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, (user_id |> string)))
-            claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role))
+            claims.Add(new Claim("PSTU_Role", role))
             let id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType)
             this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id))
         let ActionForCorrectLogined _Login = printfn "\"%s\" is entered!" _Login; this.RedirectToAction("Index", "Home")

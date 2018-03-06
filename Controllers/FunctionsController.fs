@@ -101,6 +101,8 @@ type FunctionsController (context: IMyDBContext) =
     [<Authorize>]
     member this.StudentAnceta () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        let groups = this.ctx.GetGroups |> Seq.map (fun g -> g.name_group)
+        this.ViewData.["Groups"] <- groups
         this.View(this.ctx.GetAnceteData <| this.User.Identity.Name)
     [<Authorize>]
     [<HttpPost>]

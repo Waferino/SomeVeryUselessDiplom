@@ -1,4 +1,7 @@
 namespace Starikov
+open System
+open System
+open System.Collections
 module Commands =
     (*let BuildAccount = 
         let account = new EnteredAccount()
@@ -48,6 +51,9 @@ module Commands =
             printfn "For_Account(%s):\tOld value: %O\t->\tNew value: %O" man_id dt a
             true
         else false
+    let IsStudent (claims: seq<Security.Claims.Claim>) = claims |> Seq.tryFind (fun c -> c.Type = "PSTU_Role") |> (fun claim -> if claim.IsNone then false else claim.Value.Value = "student")
+    let IsCurator (claims: seq<Security.Claims.Claim>) = claims |> Seq.tryFind (fun c -> c.Type = "PSTU_Role") |> (fun claim -> if claim.IsNone then false else claim.Value.Value = "curator")
+    let ShowClaims (claims: seq<Security.Claims.Claim>) = claims |> Seq.iter (fun c -> printfn "Type: \"%s\"\tValueType: \"%s\"\tValue: \"%s\"" c.Type c.ValueType c.Value)
 module Checker =
     open NickBuhro.Translit
     let K s1 s2 =
@@ -131,3 +137,9 @@ module Logs =
     let add_ExtLog query logs =
         let logText = sprintf "%s: <|%s|> <|%A|>" (System.DateTime.UtcNow.ToString("hh:mm:ss")) logs query
         add logText
+module Files =
+    open System
+    let files_extensions = [ (".txt", "text/plain"); (".pdf", "application/pdf"); (".doc", "application/vnd.ms-word"); (".docx", "application/vnd.ms-word"); (".xls", "application/vnd.ms-excel"); (".xlsx", "application/vnd.openxmlformatsofficedocument.spreadsheetml.sheet"); (".png", "image/png"); (".jpg", "image/jpeg"); (".jpeg", "image/jpeg"); (".gif", "image/gif"); (".csv", "text/csv") ]
+    let GetFileExt path =
+        let ext = System.IO.Path.GetExtension(path).ToLowerInvariant()
+        files_extensions |> List.filter (fun (e, _) -> e = ext) |> List.head |> fun (_, r) -> r
