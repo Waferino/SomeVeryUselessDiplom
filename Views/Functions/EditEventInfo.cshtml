@@ -1,6 +1,7 @@
 @model EventInfo
 @{
     ViewData["Title"] = "Изменение события";
+    int ChangedBy = (int)ViewData["id_man"];
 }
 <div class="panel-body">
   <form asp-controller="Functions" asp-action="CreateEvent" method="POST" >
@@ -9,7 +10,7 @@
             <input type="hidden" asp-for="id_EventInfo" value=@Model.id_EventInfo />
             <div class="form-group row">
               <label asp-for="DateOfThe" class="col-md-2 control-label">Ожидаемая дата проведения:</label>
-              <input type="date" class="form-control" asp-for="DateOfThe" value=@Model.DateOfThe />
+              <input type="text" id="datepicker" class="form-control" asp-for="DateOfThe" value=@Model.DateOfThe />
             </div>
             <div class="form-group row">
               <label asp-for="Name" class="col-md-2 control-label">Название события:</label>
@@ -18,6 +19,9 @@
             <div class="form-group row">
               <label asp-for="Notation" class="col-md-2 control-label">Примачание к событию:</label>
               <input class="form-control" asp-for="Notation" value=@Model.Notation />
+            </div>
+            <div>
+              <input type="hidden" asp-for="ChangedBy" value=@ChangedBy />
             </div>
             <div class="form-group row">
               <label>&nbsp;</label>

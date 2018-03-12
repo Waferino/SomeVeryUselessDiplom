@@ -33,7 +33,7 @@ type Startup private () =
         //services.AddDbContext<AppIdentityDbContext>(fun options -> options.UseSqlServer(@"Server=(localdb)\\MSSQLLocalDB;Database=Identity;Trusted_Connection=True;MultipleActiveResultSets=true", null)) |> ignore
         services.AddMvc() |> ignore     //this.Configuration.["Data:Default:ConnectionString"]
         services.AddAuthorization(fun option -> option.AddPolicy("CuratorOnly", (fun policy -> policy.RequireClaim("PSTU_Role", "curator") |> ignore))) |> ignore
-        //services.AddAuthorization(fun option -> option.AddPolicy("StudentOnly", (fun policy -> policy.RequireClaim("PSTU_Role", "student") |> ignore))) |> ignore
+        services.AddAuthorization(fun option -> option.AddPolicy("StudentOnly", (fun policy -> policy.RequireClaim("PSTU_Role", "student") |> ignore))) |> ignore
         services.AddMemoryCache() |> ignore
         services.AddSession() |> ignore
 

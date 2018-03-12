@@ -130,6 +130,10 @@ type CafedraDBContext() =
             let ct = this :> IBaseSQLCommands
             //let ret = new List<Starikov.dbModels.Person>()
             seq { for v in ct.Get "student" do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
+        member this.GetFIO man_id =
+            let ct = this :> IBaseSQLCommands
+            let p = ct.GetWhere "people" (sprintf "(id_man='%O')" man_id) |> Seq.map (Commands.Setter (new Starikov.dbModels.Person())) |> Seq.head
+            sprintf "%s %c.%c." p.fam p.name.[0] p.otchestvo.[0]
         member this.GetGroups =
             let ct = this :> IBaseSQLCommands
             seq { for v in ct.Get "group" do yield (Commands.Setter (new Starikov.dbModels.Group()) v) }
@@ -192,19 +196,33 @@ type CafedraDBContext() =
                 true
             with
                 | _ -> false
+        member this.InsertEvent event =
+            let ct = this :> IBaseSQLCommands
+            let mutable fake = false
+            let names, values = Commands.Getter <| event |> Array.map (fun (n, v) -> (("`" + n + "`"), (sprintf "'%O'" v))) |> Array.unzip
+            let tableName = sprintf "%s" (((event.GetType()).Name).ToLower())
+            let fNames = names.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            let fValues = values.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
+            try
+                let res = ct.Insert tableName (sprintf "(%s)" fNames) fValues 
+                printfn "Result: %s" res
+                true
+            with
+                | _ -> false
         member this.GetAnceteData man_id =
             let ct = this :> IBaseSQLCommands
             let NC target = if target = null then "" else target
             let abPerson = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
             let abStudent = ct.GetWhere "student" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
             let abGroup = if abStudent.id_group.HasValue then (ct.GetWhere "group" (sprintf "(id_group='%d')" abStudent.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
+            //let abAncete = ct.GetWhere "anceteinfo" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new AnceteInfo())
             let ret = //new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo, group = abGroup.name_group, birthdate = DateTime.Parse(abPerson.data_rojdeniya), grajdanstvo = abPerson.nacionalnost, voinskii_uchet = abPerson.nomer_vb, education = abPerson.chto_zakonchil, family_status = abPerson.semeinoe_polojenie, (*Childrens = ,*) pasport_serial = abPerson.serial_pasport, pasport_number = abPerson.number_pasport, pasport_getter = (sprintf "%s %s" abPerson.data_vidachi_pasporta abPerson.kem_vidan), (*pasport_code = ,*) inn = abPerson.INN, PFRF = abPerson.sv_vo_PFR, pIndex = abPerson.index_1, pRegion = abPerson.region_1, pCity = abPerson.gorod_1, (*pDistrict = ,*) pStreet = abPerson.ulica_1, pHome = abPerson.dom_1, pRoom = abPerson.kv_1, fIndex = abPerson.index_2, fRegion = abPerson.region_2, fCity = abPerson.gorod_2, (*fDistrict = ,*) fStreet = abPerson.ulica_2, fHome = abPerson.dom_2, fRoom = abPerson.kv_2, d_tel = abPerson.telefon_dom, m_tel = abPerson.telefon_sot, (*alter_lang = ,*) (*Bonuses = ,*) (*educationType = ,*) dealNumber = abStudent.number_kontrakta (*, dealStartDate = ,*) (*whoPay = ,*) (*pastSport = ,*) (*presantSport = ,*) (*futureSport = ,*) (*motherContact = ,*) (*fatherContact = ,*) )
                 let a = new Anceta(lastname = abPerson.fam, name = abPerson.name, patron = abPerson.otchestvo)
                 a.group <- NC abGroup.name_group
                 a.birthdate <- NC abPerson.data_rojdeniya
                 a.grajdanstvo <- NC abPerson.nacionalnost
                 a.voinskii_uchet <- NC abPerson.nomer_vb
-                a.education <- abPerson.chto_zakonchil
+                a.education <- NC abPerson.chto_zakonchil
                 a.family_status <- NC abPerson.semeinoe_polojenie
                 (*a.Childrens <- NC ,*)
                 a.pasport_serial <- NC abPerson.serial_pasport

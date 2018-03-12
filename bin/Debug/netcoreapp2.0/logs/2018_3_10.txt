@@ -1,0 +1,2 @@
+05:16:59: <|{|EventInfo|}{CHANGE IN `ChangedBy`: FROM '0' TO '1717'}{CHANGE IN `Notation`: FROM 'никаких примечаний' TO 'никаких примечаний!'}|> <|"UPDATE `EventInfo` SET `Notation`='никаких примечаний!',`ChangedBy`='1717' WHERE `id_EventInfo`='6'"|>
+05:42:26: <|"INSERT INTO `eventinfo` ( `DateOfThe`, `Name`, `Notation`, `ChangedBy`) VALUES ( '2018-04-04 0:00:00', 'Сдача диплома', 'К этому времени должен будет на 100% дописан диплом', '1717');"|>

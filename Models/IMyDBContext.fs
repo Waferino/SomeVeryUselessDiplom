@@ -16,6 +16,7 @@ type IMyDBContext =
     abstract member Remove : 'T -> string
     abstract member GetPeoples : seq<Person>
     abstract member GetStudents : seq<Student>
+    abstract member GetFIO : obj -> string
     abstract member GetGroups : seq<Group>
     abstract member GetOneGroup : int -> Group option
     abstract member GetGroupStudents : int -> seq<Student>
@@ -25,5 +26,6 @@ type IMyDBContext =
     abstract member GetAccount : string -> Account
     abstract member GetEventsInfos : seq<EventInfo>
     abstract member InsertEventInfo : EventInfo -> bool
+    abstract member InsertEvent : Starikov.dbModels.Event -> bool
     abstract member GetAnceteData : string -> Anceta
     abstract member SetAnceteData : string -> Anceta -> bool

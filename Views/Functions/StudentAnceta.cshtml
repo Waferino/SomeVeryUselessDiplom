@@ -36,7 +36,7 @@
               <label for="birthdate" class="col-md-2 control-label">Дата рождения:</label>
               <div>
                   <div class="col-md-2">
-                      <input type="date" class="form-control" asp-for="birthdate" value=@Model.birthdate title="@Model.birthdate" />
+                      <input type="text" id="datepicker" class="form-control" asp-for="birthdate" value=@Model.birthdate title="@Model.birthdate" />
                   </div>
               </div>
           </div>
@@ -88,7 +88,7 @@
                       <input class="form-control" asp-for="pasport_number" value="@Model.pasport_number" placeholder="Номер" />
                   </div>
                   <div class="col-md-2">
-                      <input class="form-control" asp-for="pasport_date" value="@Model.pasport_date" placeholder="Когда выдан" />
+                      <input type="text" id="datepicker1" class="form-control" asp-for="pasport_date" value="@Model.pasport_date" placeholder="Когда выдан" />
                   </div>
                   <div class="col-md-3">
                       <input class="form-control" asp-for="pasport_getter" value="@Model.pasport_getter" placeholder="Кем выдан" />
@@ -213,7 +213,7 @@
                       <input class="form-control" asp-for="dealNumber" value="@Model.dealNumber" placeholder="Договор №" />
                   </div>
                   <div class="col-md-2">
-                      <input type="date" class="form-control" asp-for="dealStartDate" value="@Model.dealStartDate" title="договор от '_'_____201_г" />
+                      <input type="text" id="datepicker2" class="form-control" asp-for="dealStartDate" value="@Model.dealStartDate" title="договор от '_'_____201_г" />
                   </div>
                   <div class="col-md-2">
                       <input class="form-control" asp-for="whoPay" value="@Model.whoPay" placeholder="Имя/название" title="Имя (название) физического (юридического) лица, являющегося плательщиком за оказание образовательных услуг согласно договору" />

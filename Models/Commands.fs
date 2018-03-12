@@ -2,7 +2,9 @@ namespace Starikov
 open System
 open System
 open System.Collections
+
 module Commands =
+    open System.ComponentModel
     (*let BuildAccount = 
         let account = new EnteredAccount()
         account.IsEnter <- true
@@ -29,7 +31,14 @@ module Commands =
             try
                 pr_info.SetValue(target, value)
             with
-                | _ -> printfn "Bad instance with Property \"%s\"\tT: %s" pr_info.Name tp.Name
+                | _ ->  
+                        let converter = TypeDescriptor.GetConverter(pr_info.PropertyType)
+                        if converter |> isNull |> not then
+                            try
+                                let value' = converter.ConvertFromString(value.ToString())
+                                pr_info.SetValue(target, value')
+                            with
+                                | _ -> printfn "Bad instance with Property \"%s\"\tValue: %O\tT: %s" pr_info.Name value tp.Name
         let pi = tp.GetProperties()
         if pi.Length <> (Array.length <| values) then failwith "Error! Setter_arguments"
         for i = 0 to pi.Length - 1 do

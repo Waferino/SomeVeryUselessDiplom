@@ -1,6 +1,10 @@
 ﻿@model IEnumerable<EventInfo>
 @{
     ViewData["Title"] = "EventsInfo";
+    bool IsAuthenticated = (bool)ViewData["IsAuthenticated"];
+    bool IsStudent = (bool)ViewData["IsStudent"];
+    IEnumerable<int> meEvents = (IEnumerable<int>)ViewData["meEvents"];
+    IEnumerable<int> groupEvents = (IEnumerable<int>)ViewData["groupEvents"];
 }
 
 <table class="table">
@@ -10,7 +14,18 @@
       <th scope="col">Дата события</th>
       <th scope="col">Примечание к событию</th>
       <th scope="col"></th>
-      <th scope="col"></th>
+      @if(IsAuthenticated)
+      {
+        @if(IsStudent)
+        {
+          <th scope="col"></th>
+        }
+        @if(!IsStudent)
+        { 
+          <th scope="col"></th>
+          <th scope="col"></th>
+        }
+      }
     </tr>
   </thead>
   <tbody>
@@ -20,8 +35,34 @@
       <td>@ei.Name</td>
       <td>@ei.DateOfThe</td>
       <td>@ei.Notation</td>
-      <td><a asp-controller="Functions" asp-action="EditEventInfo" asp-route-id=@ei.id_EventInfo class="btn btn-primary" >Изменить</a></td>
-      <td><a asp-controller="Functions" asp-action="RemoveEventInfo" asp-route-id=@ei.id_EventInfo class="btn btn-primary" >Удалить</a></td>
+    @if(IsAuthenticated)
+    {  
+      @if(IsStudent)
+      {
+        @if(meEvents.Contains(@ei.id_EventInfo))
+        {
+          @if(groupEvents.Contains(@ei.id_EventInfo))
+          {
+            <td>Вы учавств. в событии</td>
+          }
+          else
+          {
+            <td><a asp-controller="Functions" asp-action="CheckOutEvent" asp-route-id_ei=@ei.id_EventInfo class="btn btn-primary" >Отказаться от участия</a></td>
+
+          }
+        }
+        else
+        {
+          <td><a asp-controller="Functions" asp-action="CheckInEvent" asp-route-id_ei=@ei.id_EventInfo class="btn btn-primary" >Сообщить об участии</a></td>
+        }
+        @*<td><a asp-controller="Functions" asp-action="CheckInEvent" asp-route-id_ei=@ei.id_EventInfo class="btn btn-primary" >Сообщить об участии</a></td>*@
+      }
+      @if(!IsStudent)
+      {  
+        <td><a asp-controller="Functions" asp-action="EditEventInfo" asp-route-id=@ei.id_EventInfo class="btn btn-primary" >Изменить</a></td>
+        <td><a asp-controller="Functions" asp-action="RemoveEventInfo" asp-route-id=@ei.id_EventInfo class="btn btn-primary" >Удалить</a></td>
+      }
+    }
     </tr>
     }
   </tbody>

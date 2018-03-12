@@ -1,0 +1,1 @@
+05:26:49: <|"INSERT INTO `event` ( `id_EventInfo`, `isGroup_Event`, `fk_student_or_group`, `event_result`, `creatingDate`) VALUES ( '6', 'True', '79', '<null>', '03-12-2018');"|>

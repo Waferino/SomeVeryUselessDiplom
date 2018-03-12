@@ -26,4 +26,12 @@ let ConvertDate = (fun (t: string) ->
         let ymd = dmy.Split([|'.'|]) |> Array.rev |> Array.fold (fun acc t -> sprintf "%s%s-" acc t) "" |> (fun x -> x.Substring(0, x.Length - 2))
         sprintf "%s %s" ymd tm
     )
-ConvertDate <| date.ToString()    
+ConvertDate <| date.ToString()
+
+
+date.ToString("MM-dd-yyyy")
+
+let v = "False"
+let (t', v') = System.Boolean.TryParse(v)
+sprintf "%O" v'
+let (t'', v'') = System.Int32.TryParse(v)

@@ -103,9 +103,17 @@ type EventInfo () =
     member val DateOfThe = defaultof<System.Nullable<System.DateTime>> with get, set
     member val Name = defaultof<string> with get, set
     member val Notation = defaultof<string> with get, set //System.Nullable<>
+    member val ChangedBy = defaultof<int> with get, set
     interface ICafedraEntities with
         member this.GetNamesOfProperties () =
             [| "УИД События"; "Ожидаемая дата проведения"; "Название события"; "Примачание к событию" |]
+type Event () =
+    member val id_Event = defaultof<int> with get, set
+    member val id_EventInfo = defaultof<int> with get, set
+    member val isGroup_Event = defaultof<bool> with get, set
+    member val fk_student_or_group = defaultof<int> with get, set
+    member val event_result = defaultof<string> with get, set
+    member val creatingDate = defaultof<string> with get, set
 type Anceta () =
     member val lastname = defaultof<string> with get, set
     member val name = defaultof<string> with get, set

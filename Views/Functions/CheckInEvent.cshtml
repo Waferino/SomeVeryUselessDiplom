@@ -1,0 +1,25 @@
+@model Event
+@{
+    ViewData["Title"] = "Отметка в событии";
+    int idEventInfo = (int)ViewData["id_EventInfo"];
+}
+<div class="panel-body">
+  <form asp-controller="Functions" asp-action="CheckInEvent" method="POST" >
+          <fieldset>
+            <legend class="row col-md-offset-1">Отметка в событии</legend>
+            <div><input type="hidden" asp-for="id_EventInfo" value=@idEventInfo /></div>
+            <div class="form-group row">
+              <label asp-for="isGroup_Event" class="col-md-2 control-label">Это событие группы:</label>
+              <input type="checkbox" class="form-control" asp-for="isGroup_Event" />
+            </div>
+            <div class="form-group row">
+              <label asp-for="event_result" class="col-md-2 control-label">Результат события:</label>
+              <textarea class="form-control" asp-for="event_result" rows="3">@Model.event_result</textarea>
+            </div>
+            <div class="form-group row">
+              <label>&nbsp;</label>
+              <input type="submit" value="Принять" class="btn btn-primary" />
+            </div>
+          </fieldset>
+  </form>
+</div>
