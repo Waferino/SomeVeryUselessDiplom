@@ -125,14 +125,14 @@ type CafedraDBContext() =
             ct.Execute query logs
         member this.GetPeoples = 
             let ct = this :> IBaseSQLCommands
-            ct.Get (new Starikov.dbModels.Person())
+            ct.Get (new Starikov.dbModels.People())
         member this.GetStudents =
             let ct = this :> IBaseSQLCommands
             //let ret = new List<Starikov.dbModels.Person>()
             seq { for v in ct.Get "student" do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
         member this.GetFIO man_id =
             let ct = this :> IBaseSQLCommands
-            let p = ct.GetWhere "people" (sprintf "(id_man='%O')" man_id) |> Seq.map (Commands.Setter (new Starikov.dbModels.Person())) |> Seq.head
+            let p = ct.GetWhere "people" (sprintf "(id_man='%O')" man_id) |> Seq.map (Commands.Setter (new Starikov.dbModels.People())) |> Seq.head
             sprintf "%s %c.%c." p.fam p.name.[0] p.otchestvo.[0]
         member this.GetGroups =
             let ct = this :> IBaseSQLCommands
@@ -140,42 +140,25 @@ type CafedraDBContext() =
             //ct.GetFromType <| typeof<Group> |> Option.get
         member this.GetOneGroup id_group =
             let ct = this :> IBaseSQLCommands
-            ct.GetWhere "group" (sprintf "(id_group='%d')" id_group) |> Seq.tryHead |> Option.map (Commands.Setter (new Starikov.dbModels.Group()))
+            ct.GetWhere "group" (sprintf "(id_group='%O')" id_group) |> Seq.tryHead |> Option.map (Commands.Setter (new Starikov.dbModels.Group()))
         member this.GetGroupStudents id_group =
             let ct = this :> IBaseSQLCommands
             seq { for v in ct.GetWhere "student" (sprintf "(id_group='%d')" id_group) do yield (Commands.Setter (new Starikov.dbModels.Student()) v) }
+        member this.GetAccounts =
+            let ct = this :> IBaseSQLCommands
+            ct.Get (new Starikov.dbModels.Account())
         member this.Log_People (target: LoginViewModel) =
             let L = target.Login.Split(' ')
             let context = this :> IBaseSQLCommands
             let People = 
                 let qr = context.GetWhere "people" (sprintf "(fam='%s' AND name='%s' AND otchestvo='%s')" L.[0] L.[1] L.[2])
                 if (Seq.length <| qr) >= 1 then (Seq.head <| qr) |> Some else printfn "Incorrect Login: {%s}!" target.Login; None
-            People |> Option.map ( fun a -> Commands.Setter (new Person()) a )
-        member this.LogInForStudent (target: LoginViewModel) =
-            let People = (this :> IMyDBContext).Log_People target
-            if People.IsSome then
-                let qr = (this :> IBaseSQLCommands).GetWhere "student" (sprintf "(id_man='%O')" People.Value.id_man)
-                let Student = qr |> Seq.head |> Commands.Setter (new Student())
-                printfn "Student with Login{\"%s\"} was founded... His id is %d" target.Login Student.id_man
-                if Student.number_zach = target.Identity then
-                    let acc = new Account(IsStudent = true)
-                    acc.Person <- People.Value
-                    acc.Student <- Student
-                    acc |> Some
-                else None
-            else None
-        member this.LogInForCurator (target: LoginViewModel) =
-            let People = (this :> IMyDBContext).Log_People target
-            if People.IsSome then
-                if target.Identity = "Cur" then
-                    (new Account(Person = People.Value)) |> Some
-                else None
-            else None
+            People |> Option.map ( fun a -> Commands.Setter (new People()) a )
         member this.GetAccount (man_id) =
             let ct = this :> IBaseSQLCommands
-            let person = (ct.GetWhere "people" (sprintf "(id_man='%s')" man_id)) |> Seq.head |> Commands.Setter (new Person())
+            let person = (ct.GetWhere "people" (sprintf "(id_man='%s')" man_id)) |> Seq.head |> Commands.Setter (new People())
             let student = (ct.GetWhere "student" (sprintf "(id_man='%s')" man_id)) |> Seq.tryHead |> Option.map (Commands.Setter (new Student()))
-            let retAcc = new Account(Person = person)
+            let retAcc = new AccountInfo(Person = person)
             if student.IsSome then
                 retAcc.IsStudent <- true
                 retAcc.Student <- student.Value
@@ -183,10 +166,22 @@ type CafedraDBContext() =
         member this.GetEventsInfos =
             let ct = this :> IBaseSQLCommands
             ct.Get (new Starikov.dbModels.EventInfo())
+        member this.InsertAccount acc =
+            let ct = this :> IBaseSQLCommands
+            let names, values = Commands.Getter <| acc |> Array.map (fun (n, v) -> (("`" + n + "`"), sprintf "'%O'" v)) |> Array.unzip
+            let tableName = sprintf "%s" (((acc.GetType()).Name).ToLower())
+            let fNames = names |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            let fValues = values |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            try
+                let res = ct.Insert tableName (sprintf "(%s)" fNames) (sprintf "(%s)" fValues)
+                printfn "Inserting account({%d}) result: %s" acc.id_man res
+                true
+            with
+                | _ -> false
         member this.InsertEventInfo einfo =
             let ct = this :> IBaseSQLCommands
             let mutable fake = new DateTime()
-            let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), ( if DateTime.TryParse((v.ToString()), &fake) then sprintf "'%s'" (Commands.ConvertDate <| v.ToString()) else sprintf "'%O'" v)) ) |> Array.unzip
+            let names, values = Commands.Getter <| einfo |> Array.map (fun (n, v) -> (("`" + n + "`"), (if (v |> isNull |> not) && DateTime.TryParse((v.ToString()), &fake) then sprintf "'%s'" (Commands.ConvertDate <| v.ToString()) else sprintf "'%O'" v) )) |> Array.unzip
             let tableName = sprintf "%s" (((einfo.GetType()).Name).ToLower())
             let fNames = names.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
             let fValues = values.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
@@ -209,10 +204,22 @@ type CafedraDBContext() =
                 true
             with
                 | _ -> false
+        member this.InsertExtraEvent exEvent =
+            let ct = this :> IBaseSQLCommands
+            let names, values = Commands.Getter <| exEvent |> Array.map (fun (n, v) -> (("`" + n + "`"), (sprintf "'%O'" v))) |> Array.unzip
+            let tableName = sprintf "%s" (((exEvent.GetType()).Name).ToLower())
+            let fNames = names.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") ""
+            let fValues = values.[1..] |> Array.fold (sprintf "%s, %s") "" |> Seq.tail |> Seq.fold (sprintf "%s%c") "" |> sprintf "(%s)"
+            try
+                let res = ct.Insert tableName (sprintf "(%s)" fNames) fValues 
+                printfn "Result: %s" res
+                true
+            with
+                | _ -> false
         member this.GetAnceteData man_id =
             let ct = this :> IBaseSQLCommands
             let NC target = if target = null then "" else target
-            let abPerson = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abPerson = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new People())
             let abStudent = ct.GetWhere "student" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
             let abGroup = if abStudent.id_group.HasValue then (ct.GetWhere "group" (sprintf "(id_group='%d')" abStudent.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
             //let abAncete = ct.GetWhere "anceteinfo" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new AnceteInfo())
@@ -257,7 +264,7 @@ type CafedraDBContext() =
             ret
         member this.SetAnceteData man_id a =
             let ct = this :> IBaseSQLCommands
-            let abP = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Person())
+            let abP = ct.GetWhere "people" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new People())
             let abS = ct.GetWhere "student" (sprintf "(id_man='%s')" man_id) |> Seq.head |> Commands.Setter (new Student())
             let abG = if abS.id_group.HasValue then (ct.GetWhere "group" (sprintf "(id_group='%d')" abS.id_group.Value) |> Seq.head |> Commands.Setter (new dbModels.Group())) else (new dbModels.Group()) 
             let mct = this :> IMyDBContext

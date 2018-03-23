@@ -1,1 +1,4 @@
 05:26:49: <|"INSERT INTO `event` ( `id_EventInfo`, `isGroup_Event`, `fk_student_or_group`, `event_result`, `creatingDate`) VALUES ( '6', 'True', '79', '<null>', '03-12-2018');"|>
+05:12:06: <|{|Event|}{`id_Event`: '1'}{`id_EventInfo`: '2'}{`isGroup_Event`: 'False'}{`fk_student_or_group`: '1717'}{`event_result`: 'i was born!'}{`creatingDate`: '03-12-2018'}|> <|"DELETE FROM `Event` WHERE `id_Event`='1'"|>
+05:13:09: <|"INSERT INTO `event` ( `id_EventInfo`, `isGroup_Event`, `fk_student_or_group`, `event_result`, `creatingDate`) VALUES ( '2', 'False', '1717', 'я реально проперся в тот день!', '03-12-2018');"|>
+05:24:35: <|{|Event|}{`id_Event`: '8'}{`id_EventInfo`: '2'}{`isGroup_Event`: 'False'}{`fk_student_or_group`: '1717'}{`event_result`: 'я реально проперся в тот день!'}{`creatingDate`: '03-12-2018'}|> <|"DELETE FROM `Event` WHERE `id_Event`='8'"|>

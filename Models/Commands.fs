@@ -18,7 +18,14 @@ module Commands =
             try
                 pr_info.SetValue(target, value)
             with
-                | _ -> printfn "Bad instance with Property \"%s\"\tT: %A" pr_info.Name target
+                | _ -> 
+                        let converter = TypeDescriptor.GetConverter(pr_info.PropertyType)
+                        if converter |> isNull |> not then
+                            try
+                                let value' = converter.ConvertFromString(value.ToString())
+                                pr_info.SetValue(target, value')
+                            with
+                                | _ -> printfn "Bad instance with Property \"%s\"\tValue: %O\tT: %O" pr_info.Name value target
         let T = target.GetType()
         let pi = T.GetProperties()
         if pi.Length <> (Array.length <| values) then failwith "Error! Setter_arguments"
@@ -62,7 +69,7 @@ module Commands =
         else false
     let IsStudent (claims: seq<Security.Claims.Claim>) = claims |> Seq.tryFind (fun c -> c.Type = "PSTU_Role") |> (fun claim -> if claim.IsNone then false else claim.Value.Value = "student")
     let IsCurator (claims: seq<Security.Claims.Claim>) = claims |> Seq.tryFind (fun c -> c.Type = "PSTU_Role") |> (fun claim -> if claim.IsNone then false else claim.Value.Value = "curator")
-    let ShowClaims (claims: seq<Security.Claims.Claim>) = claims |> Seq.iter (fun c -> printfn "Type: \"%s\"\tValueType: \"%s\"\tValue: \"%s\"" c.Type c.ValueType c.Value)
+    //let ShowClaims (claims: seq<Security.Claims.Claim>) = claims |> Seq.iter (fun c -> printfn "Type: \"%s\"\tValueType: \"%s\"\tValue: \"%s\"" c.Type c.ValueType c.Value)
 module Checker =
     open NickBuhro.Translit
     let K s1 s2 =

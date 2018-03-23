@@ -23,7 +23,6 @@ type HomeController (context: IMyDBContext) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         //if this.User.Identity.IsAuthenticated then this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
         this.ViewData.["IsStudent"] <- this.User.Claims |> Commands.IsStudent
-        this.User.Claims |> Commands.ShowClaims
         if this.User.Identity.IsAuthenticated then 
             let AccountInfo = this.User.Identity.Name |> this.ctx.GetAccount
             this.ViewData.["AccountInfo"] <- AccountInfo

@@ -1,0 +1,1 @@
+04:32:48: <|"INSERT INTO `account` ( `id_man`, `Email`, `Password`, `Role`, `date_of_change`) VALUES ( '1717', 'nekomata93@gmail.com', 'kagura', 'student', '03-21-2018');"|>

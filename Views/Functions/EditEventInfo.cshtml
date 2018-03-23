@@ -18,7 +18,8 @@
             </div>
             <div class="form-group row">
               <label asp-for="Notation" class="col-md-2 control-label">Примачание к событию:</label>
-              <input class="form-control" asp-for="Notation" value=@Model.Notation />
+              @*<input class="form-control" asp-for="Notation" value=@Model.Notation />*@
+              <textarea class="form-control" asp-for="Notation" rows="3" >@Model.Notation</textarea>
             </div>
             <div>
               <input type="hidden" asp-for="ChangedBy" value=@ChangedBy />

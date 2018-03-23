@@ -35,3 +35,6 @@ let v = "False"
 let (t', v') = System.Boolean.TryParse(v)
 sprintf "%O" v'
 let (t'', v'') = System.Int32.TryParse(v)
+
+[1; 2; 3; 2; 3; 4; 5; 6; 7; 1; 8] |> List.filter (fun d -> d = 9)
+"14-03-2018" |> fun s -> System.DateTime.Parse(s) |> fun d -> d.ToString("MM-dd-yyyy")

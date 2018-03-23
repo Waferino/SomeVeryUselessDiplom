@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Группы ВУЗа";
     int row_index = 1;
+    int id_ei = (int)ViewData["id_EventInfo"];
 }
 
 <table class="table">
@@ -18,7 +19,7 @@
     <tr>
       <td scope="row">@(row_index++)</td>
       <td>@g.name_group</td>
-      <td><a asp-controller="Functions" asp-action="OneGroupInfo" asp-route-id=@g.id_group class="btn btn-primary" >Перейти</a></td>
+      <td><a asp-controller="Functions" asp-action="CheckInEvent" asp-route-id_gr=@g.id_group asp-route-id_ei=@id_ei class="btn btn-primary" >Перейти</a></td>
     </tr>
     }
   </tbody>

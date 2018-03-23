@@ -16,6 +16,7 @@ open Microsoft.Extensions.DependencyModel.Resolution
 open Microsoft.AspNetCore.Mvc.ModelBinding
 open Microsoft.AspNetCore.Http.Extensions
 open System.Reflection.Metadata
+open System.IO
 
 
 type FunctionsController (context: IMyDBContext) =
@@ -43,13 +44,20 @@ type FunctionsController (context: IMyDBContext) =
                                         let studVal = 
                                             acc.Student 
                                             |> Commands.Getter 
+                                            |> Array.map (fun (n, v) -> 
+                                                                        if n <> "id_group" then 
+                                                                            (n, v)
+                                                                        else
+                                                                            let v' = v |> this.ctx.GetOneGroup |> Option.map (fun gr' -> gr'.name_group :> obj)
+                                                                            if v' |> Option.isSome then (n, (v' |> Option.get))
+                                                                            else (n, ("-" :> obj)))
                                             |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) 
                                             |> Array.tail 
                                             |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
             |> Seq.map (fun a -> 
                                         if Commands.IsCurator <| this.User.Claims then a
-                                        else [| a.[0]; a.[1]; a.[2]; a.[3]; a.[10]; a.[26]; a.[27]; a.[59]; a.[61] |] )                            
+                                        else [| a.[1]; a.[2]; a.[3]; a.[10]; a.[26]; a.[27]; a.[59]; a.[61] |] )                            
         this.View(students)
     member this.StudentInfo () =    // VERY SLOW!!! NEED PARALLELING, BUT PROBLEMS IN DB ACCESS 
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
@@ -66,13 +74,20 @@ type FunctionsController (context: IMyDBContext) =
                                         let studVal = 
                                             acc.Student 
                                             |> Commands.Getter 
+                                            |> Array.map (fun (n, v) -> 
+                                                                        if n <> "id_group" then 
+                                                                            (n, v)
+                                                                        else
+                                                                            let v' = v |> this.ctx.GetOneGroup |> Option.map (fun gr' -> gr'.name_group :> obj)
+                                                                            if v' |> Option.isSome then (n, (v' |> Option.get))
+                                                                            else (n, ("-" :> obj)))
                                             |> Array.zip ((acc.Student :> ICafedraEntities).GetNamesOfProperties()) 
                                             |> Array.tail 
                                             |> Array.Parallel.map (fun (n, (f, s)) -> new CSharpDuoTurple(PrName = n, PrRealName = f, PrValue = s))
                                         Array.concat (seq { yield personVal; yield studVal}) )
             |> Seq.map (fun a -> 
                                         if Commands.IsCurator <| this.User.Claims then a
-                                        else [| a.[0]; a.[1]; a.[2]; a.[3]; a.[10]; a.[26]; a.[27]; a.[59]; a.[61] |] )
+                                        else [| a.[1]; a.[2]; a.[3]; a.[10]; a.[26]; a.[27]; a.[59]; a.[61] |] )
         this.View(students)
     member this.EventsInfo () =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
@@ -83,11 +98,12 @@ type FunctionsController (context: IMyDBContext) =
         let retU = EventsInfos |> Seq.filter (fun ei -> not <| ei.DateOfThe.HasValue) |> Seq.sortBy (fun ei -> ei.Name)
         let ret = seq { for ei in retD -> ei
                         for ei in retU -> ei }
-        let mid, gid = this.ctx.GetAccount this.User.Identity.Name |> (fun a -> (a.Person.id_man, (if a.IsStudent then (if a.Student.id_group.HasValue then a.Student.id_group.Value else 0) else 0) ) )
-        let ct = this.ctx :?> IBaseSQLCommands
-        let evts = ct.Get (new Starikov.dbModels.Event())
-        this.ViewData.["meEvents"] <- evts |> Seq.filter (fun e -> if e.isGroup_Event then e.fk_student_or_group = gid else e.fk_student_or_group = mid) |> Seq.map (fun e -> printfn "id_EI: %A"; e.id_EventInfo)
-        this.ViewData.["groupEvents"] <- evts |> Seq.filter (fun e -> e.isGroup_Event) |> Seq.filter (fun e -> e.fk_student_or_group = gid) |> Seq.map (fun e -> printfn "id_EI: %A"; e.id_EventInfo)
+        if this.User.Identity.IsAuthenticated then
+            let mid, gid = this.ctx.GetAccount this.User.Identity.Name |> (fun a -> (a.Person.id_man, (if a.IsStudent then (if a.Student.id_group.HasValue then a.Student.id_group.Value else 0) else 0) ) )
+            let ct = this.ctx :?> IBaseSQLCommands
+            let evts = ct.Get (new Starikov.dbModels.Event())
+            this.ViewData.["meEvents"] <- evts |> Seq.filter (fun e -> if e.isGroup_Event then e.fk_student_or_group = gid else e.fk_student_or_group = mid) |> Seq.map (fun e -> printfn "id_EI: %A"; e.id_EventInfo)
+            this.ViewData.["groupEvents"] <- evts |> Seq.filter (fun e -> e.isGroup_Event) |> Seq.filter (fun e -> e.fk_student_or_group = gid) |> Seq.map (fun e -> printfn "id_EI: %A"; e.id_EventInfo)
         this.View(ret)
     [<Authorize>]
     member this.CreateEvent () =
@@ -101,7 +117,7 @@ type FunctionsController (context: IMyDBContext) =
         let sei = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = event.id_EventInfo) |> Seq.tryHead
         if sei.IsNone then
             let res = this.ctx.InsertEventInfo event
-            res |> ignore
+            res |> printfn "Event(\"%s\") is created? <%b>" event.Name
         else 
             let ei = sei.Value
             let query, logs = QueryBuilder.BuildUpdateQuery ei event
@@ -119,30 +135,87 @@ type FunctionsController (context: IMyDBContext) =
     member this.RemoveEventInfo (id: int) =
         let res = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = id) |> Seq.head |> this.ctx.Remove
         this.RedirectToAction("EventsInfo")
-    [<Authorize(Policy = "StudentOnly")>]
-    member this.CheckInEvent (id_ei: int) =
+    [<Authorize>]
+    member this.ChooseGroup (id_ei: int) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
         this.ViewData.["id_EventInfo"] <- id_ei
-        printfn "ID: %A" id_ei
-        let model = new Starikov.dbModels.Event(id_EventInfo = id_ei)
+        let groups = this.ctx.GetGroups
+        let model = if this.User.Claims |> Commands.IsCurator then groups |> Seq.filter (fun g -> g.kurator = this.User.Identity.Name) else groups
         this.View(model)
-    [<Authorize(Policy = "StudentOnly")>]
+    [<Authorize>]
+    member this.ChooseEvent (id_gr: int) =
+        this.View()
+    [<Authorize>]
+    member this.CheckInEvent (id_gr: int, id_ei: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        this.ViewData.["id_man"] <- this.User.Identity.Name |> int
+        if id_gr <> 0 then this.ViewData.["isGE"] <- true else this.ViewData.["isGE"] <- false
+        this.ViewData.["id_Group"] <- id_gr
+        this.ViewData.["id_EventInfo"] <- id_ei
+        let model = new Starikov.dbModels.Event()
+        this.View(model)
+    (*[<Authorize>]
+    member this.CheckInEvent (id_ei: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        this.ViewData.["isGE"] <- false
+        this.ViewData.["id_EventInfo"] <- id_ei
+        let model = new Starikov.dbModels.Event(id_EventInfo = id_ei)
+        this.View(model)*)
+    [<Authorize>]
     [<HttpPost>]
     member this.CheckInEvent (event: Starikov.dbModels.Event) =
+        let isStudent = Commands.IsStudent <| this.User.Claims
         let id_man = this.User.Identity.Name |> int
-        printfn "ID: %A" event.id_EventInfo
-        if event.isGroup_Event then
-            let id_group = this.ctx.GetStudents |> Seq.filter (fun s -> s.id_man = id_man) |> Seq.map (fun s -> s.id_group) |> Seq.head
-            if id_group.HasValue then 
-                event.fk_student_or_group <- id_group.Value
-            else
-                event.isGroup_Event <- false
-                event.fk_student_or_group <- id_man
-        else
-            event.fk_student_or_group <- id_man
         event.creatingDate <- (System.DateTime.Now.ToString("MM-dd-yyyy"))
         let res = this.ctx.InsertEvent event
+        printfn "RESULT: %A" res
+        this.RedirectToAction("EventsInfo")
+    [<Authorize(Policy = "StudentOnly")>]
+    member this.ManageEvent (id_ei: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        let event = (this.ctx :?> IBaseSQLCommands).Get (new Starikov.dbModels.Event()) |> Seq.filter (fun e -> e.id_EventInfo = id_ei && e.fk_student_or_group = (this.User.Identity.Name |> int)) |> Seq.head
+        let ei = this.ctx.GetEventsInfos |> Seq.filter (fun ei -> ei.id_EventInfo = event.id_EventInfo) |> Seq.head
+        this.ViewData.["EI_Name"] <- ei.Name
+        this.ViewData.["EI_Notation"] <- ei.Notation
+        this.View(event)
+    [<Authorize(Policy = "StudentOnly")>]
+    member this.AddExtraEvent (id_event: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        //let model = new ExtraEvent(id_Event = id_event)
+        this.ViewData.["id_Event"] <- id_event
+        this.View()
+    [<Authorize(Policy = "StudentOnly")>]
+    [<HttpPost>]
+    member this.AddExtraEvent (file: IFormFile, id_event: int) =
+        if file |> isNull || file.Length = 0L then 
+            printfn "file not selected"
+            this.RedirectToAction("AddExtraEvent", id_event)
+        else
+            let path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ExtraEvents_Students_files", this.User.Identity.Name, id_event.ToString(), file.FileName)
+            let directory_name = Path.GetDirectoryName(path)
+            let directory = new DirectoryInfo(directory_name)
+            if directory.Exists |> not then Directory.CreateDirectory(directory_name) |> ignore
+            let fileInfo = new FileInfo(path)
+            if fileInfo.Exists |> not then fileInfo.Delete()
+            use stream = new FileStream(path, FileMode.Create)
+            file.CopyTo(stream)
+            let extraEvent = new ExtraEvent(id_Event = id_event, fileName = file.FileName, contentType = file.ContentType, fileDataPath = path, creatingDate = DateTime.Now.ToString("MM-dd-yyyy"))
+            let res = this.ctx.InsertExtraEvent <| extraEvent
+            printfn "ExtraEvent insert result: <%b>" res
+            this.RedirectToAction("EventsInfo")
+    [<Authorize(Policy = "StudentOnly")>]
+    member this.CheckOutEvent (id_event: int) =
+        let res = (this.ctx :?> IBaseSQLCommands).Get (new Starikov.dbModels.Event()) |> Seq.filter (fun e -> e.id_Event = id_event) |> Seq.head |> this.ctx.Remove
+        let path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ExtraEvents_Students_files", this.User.Identity.Name, id_event.ToString())
+        let di = new DirectoryInfo(path)
+        if di.Exists then
+            di.GetFiles() |> Array.iter (fun fi -> fi.Delete())
+            di.Delete()
         this.RedirectToAction("EventsInfo")
     [<Authorize>]
     member this.StudentAnceta () =

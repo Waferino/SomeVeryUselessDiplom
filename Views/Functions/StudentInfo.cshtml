@@ -2,10 +2,12 @@
 @{
     ViewData["Title"] = "Студенты ВУЗа";
     var Head = Model.First();
+    int row_index = 1;
 }
 <table class="table">
     <thead>
     <tr>
+        <th scope="col">№</th>
         @foreach(var e in Head)
         {
             <th scope="col">@e.PrName</th>
@@ -16,6 +18,7 @@
       @foreach(var row in Model)
       {
           <tr scope="row" >
+            <td>@(row_index++)</td>
                 @foreach(var e in row)
                 {
                     <td>@e.PrValue</td>

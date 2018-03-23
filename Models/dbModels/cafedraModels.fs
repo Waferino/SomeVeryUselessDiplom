@@ -5,7 +5,7 @@ type ICafedraEntities =
     //default this.GetValuesOfProperties = [| for pi in (this.GetType()).GetProperties() do yield (pi.Name, pi.GetValue(this)) |]
     abstract member GetNamesOfProperties : unit -> string []
 
-type Person () =
+type People () =
     member val id_man = defaultof<int> with get, set
     member val fam = defaultof<string> with get, set
     member val name = defaultof<string> with get, set
@@ -81,7 +81,7 @@ type Student () =
     interface ICafedraEntities with
         //member this.GetValuesOfProperties = [| for pi in (this.GetType()).GetProperties() do yield (pi.Name, pi.GetValue(this)) |]
         member this.GetNamesOfProperties () = 
-            [| "УИД Человека"; "Номер зачетки"; "УИД Группы"; "Код плательщика"; "Год поступления"; "Отчислен из группы"; "Номер контракта"; "Код \"1\""; "Дата изменения" |]
+            [| "УИД Человека"; "Номер зачетки"; "Группа"; "Код плательщика"; "Год поступления"; "Отчислен из группы"; "Номер контракта"; "Код \"1\""; "Дата изменения" |]
 type Group () =
     member val id_group = defaultof<int> with get, set
     member val year_postup = defaultof<string> with get, set
@@ -98,6 +98,12 @@ type Group () =
     interface ICafedraEntities with
         member this.GetNamesOfProperties () =
             [| "УИД Группы"; "Год поступления"; "Название группы"; "Форма"; "FK Куратор"; "FK Староста"; "Количество студентов"; "FK специальность"; "Выпуск"; "Код \"1\""; "Дата изменения"; "Год окончания"; |]
+type Account () =
+    member val id_man = defaultof<int> with get, set
+    member val Email = defaultof<string> with get, set
+    member val Password = defaultof<string> with get, set
+    member val Role = defaultof<string> with get, set
+    member val date_of_change = defaultof<string> with get, set
 type EventInfo () =
     member val id_EventInfo = defaultof<int> with get, set
     member val DateOfThe = defaultof<System.Nullable<System.DateTime>> with get, set
@@ -113,6 +119,13 @@ type Event () =
     member val isGroup_Event = defaultof<bool> with get, set
     member val fk_student_or_group = defaultof<int> with get, set
     member val event_result = defaultof<string> with get, set
+    member val creatingDate = defaultof<string> with get, set
+type ExtraEvent () =
+    member val id_ExtraEvent = defaultof<int> with get, set
+    member val id_Event = defaultof<int> with get, set
+    member val fileName = defaultof<string> with get, set
+    member val contentType = defaultof<string> with get, set
+    member val fileDataPath = defaultof<string> with get, set
     member val creatingDate = defaultof<string> with get, set
 type Anceta () =
     member val lastname = defaultof<string> with get, set

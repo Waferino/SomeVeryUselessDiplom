@@ -1,0 +1,26 @@
+@model Starikov.dbModels.Event
+@{
+    ViewData["Title"] = "ManageEvent";
+    string EI_Name = (string)ViewData["EI_Name"];
+    string EI_Notation = (string)ViewData["EI_Notation"];
+}
+<table class="table">
+    <thead>
+    <tr>
+      <th scope="col">Название события</th>
+      <th scope="col">Описание события</th>
+      <th scope="col">Примечание к событию</th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td>@EI_Name</td>
+        <td>@EI_Notation</td>
+        <td>@Model.event_result</td>
+        <td><a asp-controller="Functions" asp-action="AddExtraEvent" asp-route-id_event=@Model.id_Event class="btn btn-primary" >Добавить приложение</a></td>
+        <td><a asp-controller="Functions" asp-action="CheckOutEvent" asp-route-id_event=@Model.id_Event class="btn btn-primary" >Отказаться от участия</a></td>
+    </tr>
+  </tbody>
+</table>

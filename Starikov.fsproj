@@ -8,7 +8,7 @@
   <ItemGroup>
     <Compile Include="Models/ErrorViewModel.fs" />
     <Compile Include="Models/AppIdentityDbContext.fs" />
-    <Compile Include="Models/LoginViewModel.fs" />
+    <Compile Include="Models/AccountViewModel.fs" />
     <Compile Include="Models/AboutUserModel.fs" />
     <Compile Include="Container.fs" />
     <Compile Include="Models/dbModels/cafedraModels.fs" />

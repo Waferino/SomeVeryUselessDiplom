@@ -14,18 +14,19 @@ type IBaseSQLCommands =
 
 type IMyDBContext =
     abstract member Remove : 'T -> string
-    abstract member GetPeoples : seq<Person>
+    abstract member GetPeoples : seq<People>
     abstract member GetStudents : seq<Student>
     abstract member GetFIO : obj -> string
     abstract member GetGroups : seq<Group>
-    abstract member GetOneGroup : int -> Group option
+    abstract member GetOneGroup : obj -> Group option
     abstract member GetGroupStudents : int -> seq<Student>
-    abstract member Log_People : LoginViewModel -> Person option
-    abstract member LogInForStudent : LoginViewModel -> Account option
-    abstract member LogInForCurator : LoginViewModel -> Account option 
-    abstract member GetAccount : string -> Account
+    abstract member GetAccounts : seq<Starikov.dbModels.Account>
+    abstract member Log_People : LoginViewModel -> People option
+    abstract member GetAccount : string -> AccountInfo
     abstract member GetEventsInfos : seq<EventInfo>
+    abstract member InsertAccount : Account -> bool
     abstract member InsertEventInfo : EventInfo -> bool
     abstract member InsertEvent : Starikov.dbModels.Event -> bool
+    abstract member InsertExtraEvent : Starikov.dbModels.ExtraEvent -> bool
     abstract member GetAnceteData : string -> Anceta
     abstract member SetAnceteData : string -> Anceta -> bool

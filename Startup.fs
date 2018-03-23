@@ -42,6 +42,7 @@ type Startup private () =
         //let bd = sprintf "%s" AppContext.BaseDirectory
         if (env.IsDevelopment()) then
             app.UseDeveloperExceptionPage() |> ignore
+            app.UseBrowserLink() |> ignore
         else
             app.UseExceptionHandler("/Home/Error") |> ignore
         app.UseStatusCodePages() |> ignore
