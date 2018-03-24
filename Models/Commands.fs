@@ -159,3 +159,36 @@ module Files =
     let GetFileExt path =
         let ext = System.IO.Path.GetExtension(path).ToLowerInvariant()
         files_extensions |> List.filter (fun (e, _) -> e = ext) |> List.head |> fun (_, r) -> r
+module MessagerModule =
+    open MimeKit
+    open MailKit.Net.Smtp
+    let Send (fromEmail, fromPass) message_subject message_body (sendTo: seq<string * string>) =
+        let message = new MimeMessage()
+        message.From.Add(new MailboxAddress("БФ ПНИПУ сообщение сайта \"Дневник куратора\"", fromEmail))
+        sendTo |> Seq.iter (fun (name, email) -> message.To.Add(new MailboxAddress(name, email)))
+        message.Subject <- message_subject
+        message.Body <- new TextPart("plain", Text = message_body)
+        use client = new SmtpClient()
+        client.Connect("smtp.gmail.com", 587, false)
+        client.Authenticate(fromEmail, fromPass)
+        client.Send(message)
+        client.Disconnect(true) 
+module JsonModule =
+    open Newtonsoft.Json
+    open Newtonsoft.Json.Linq
+    open System
+    open System.IO
+    let GetBody (path: string) =
+        use reader = new StreamReader(path)
+        reader.ReadToEnd()
+    type JSON (body: string) =
+        class
+            member val Token = JToken.Parse(body) with get, set
+            member self.Item (keys: string) =
+                let ks = keys.Split([|';'; ':'|]) |> Array.toList
+                let rec worker (jt: JToken) (id: string list) = 
+                    match id with
+                    | [] -> jt.Value<obj>()
+                    | h::t -> worker jt.[h] t
+                worker self.Token ks
+        end

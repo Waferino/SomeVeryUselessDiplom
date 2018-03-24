@@ -9,13 +9,14 @@
     <Compile Include="Models/ErrorViewModel.fs" />
     <Compile Include="Models/AppIdentityDbContext.fs" />
     <Compile Include="Models/AccountViewModel.fs" />
-    <Compile Include="Models/AboutUserModel.fs" />
+    <Compile Include="Models/ProjectsModels.fs" />
     <Compile Include="Container.fs" />
     <Compile Include="Models/dbModels/cafedraModels.fs" />
     <Compile Include="Models/dbModels/HelperClasses.fs" />
     <Compile Include="Models/Commands.fs" />
     <Compile Include="Infrastructure/SessionExtensions.fs" />
-    <Compile Include="Models/IMyDBContext.fs" />
+    <Compile Include="Models/Interfaces.fs" />
+    <Compile Include="Models\ProjectClasses.fs" />
     <Compile Include="Models/CafedraDBContext.fs" />
     <Compile Include="Controllers/HomeController.fs" />
     <Compile Include="Controllers/AccountController.fs" />
@@ -35,6 +36,7 @@
     <PackageReference Include="MySql.Data" Version="6.10.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="NickBuhro.Translit" Version="1.1.3" />
+    <PackageReference Include="NETCore.MailKit" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

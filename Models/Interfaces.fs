@@ -30,3 +30,5 @@ type IMyDBContext =
     abstract member InsertExtraEvent : Starikov.dbModels.ExtraEvent -> bool
     abstract member GetAnceteData : string -> Anceta
     abstract member SetAnceteData : string -> Anceta -> bool
+type IMessager =
+    abstract member SendMessage : string -> string -> seq<string * string> -> unit

@@ -19,13 +19,19 @@ open System.Reflection.Metadata
 open System.IO
 
 
-type FunctionsController (context: IMyDBContext) =
+type FunctionsController (context: IMyDBContext, mes: IMessager) =
     inherit Controller()
     member val ctx = context with get
+    member val messager = mes with get
     //[<Authorize>]
     member this.GroupInfo () =
-        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
-        if this.User.Identity.IsAuthenticated then this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        let isAuth = this.User.Identity.IsAuthenticated
+        this.ViewData.["IsAuthenticated"] <- isAuth
+        if isAuth then 
+            this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+            let isCur = Commands.IsCurator this.User.Claims
+            this.ViewData.["IsCurator"] <- isCur
+            this.ViewData.["UserId"] <- this.User.Identity.Name
         let groups = this.ctx.GetGroups
         this.View(groups)
     member this.OneGroupInfo (id : int) =
@@ -228,4 +234,24 @@ type FunctionsController (context: IMyDBContext) =
     [<HttpPost>]
     member this.StudentAnceta (ancet: Anceta) =
         let res = this.ctx.SetAnceteData this.User.Identity.Name ancet
+        this.RedirectToAction("Index", "Home")
+    [<Authorize>]
+    member this.MessageToGroup (id_group: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        this.View(new MessageToGroupModel(id_group = id_group))
+    [<Authorize>]
+    [<HttpPost>]
+    member this.MessageToGroup (model: MessageToGroupModel) =
+        let students = 
+            let s = this.ctx.GetStudents |> Seq.filter (fun st -> st.id_group.HasValue && st.id_group.Value = model.id_group)
+            if Seq.length <| s > 0 then s |> Seq.map (fun st -> st.id_man) else Seq.empty
+        if students |> Seq.isEmpty |> not then
+            let peoples_data = this.ctx.GetPeoples |> Seq.filter (fun p -> (Seq.contains p.id_man students) && (String.IsNullOrEmpty(p.e_mail) |> not)) |> Seq.map (fun p -> ((sprintf "%s %c.%c." p.fam p.name.[0] p.otchestvo.[0]), p.e_mail))
+            if peoples_data |> Seq.isEmpty |> not then
+                this.messager.SendMessage model.message_subject model.message_body peoples_data
+            else
+                printfn "Error in message to group(%d): missing e_mails" model.id_group
+        else
+            printfn "Error in message to group(%d): missing students" model.id_group
         this.RedirectToAction("Index", "Home")

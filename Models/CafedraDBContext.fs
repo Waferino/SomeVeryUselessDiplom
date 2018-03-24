@@ -10,8 +10,8 @@ open System.Text.RegularExpressions
 open Microsoft.Data.Edm
 open Microsoft.AspNetCore.Http.Extensions
 
-type CafedraDBContext() =
-    member val ConnectionString = @"server=localhost;userid=root;password=kagura;persistsecurityinfo=True;database=www0005_base" with get, set
+type CafedraDBContext(connectionString: string) =
+    member val ConnectionString = connectionString with get, set //@"server=localhost;userid=root;password=kagura;persistsecurityinfo=True;database=www0005_base"
     member private __.GetSqlConnection = new MySqlConnection(__.ConnectionString)
     interface IBaseSQLCommands with
         member this.Execute query logs =
