@@ -27,7 +27,7 @@
       {
         @if(IsCurator && (g.kurator == ID))
         {
-          <td><a asp-controller="Functions" asp-action="MessageToGroup" asp-route-id=@g.id_group class="btn btn-primary" >Написать</a></td>
+          <td><a asp-controller="Functions" asp-action="MessageToGroup" asp-route-id_group=@g.id_group class="btn btn-primary" >Написать</a></td>
         }
       }
     </tr>

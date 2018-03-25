@@ -64,6 +64,9 @@ type FunctionsController (context: IMyDBContext, mes: IMessager) =
             |> Seq.map (fun a -> 
                                         if Commands.IsCurator <| this.User.Claims then a
                                         else [| a.[1]; a.[2]; a.[3]; a.[10]; a.[26]; a.[27]; a.[59]; a.[61] |] )                            
+        if this.User.Identity.IsAuthenticated then 
+            let isCurator = Commands.IsCurator this.User.Claims
+            this.ViewData.["IsCurator"] <- isCurator
         this.View(students)
     member this.StudentInfo () =    // VERY SLOW!!! NEED PARALLELING, BUT PROBLEMS IN DB ACCESS 
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
@@ -235,12 +238,13 @@ type FunctionsController (context: IMyDBContext, mes: IMessager) =
     member this.StudentAnceta (ancet: Anceta) =
         let res = this.ctx.SetAnceteData this.User.Identity.Name ancet
         this.RedirectToAction("Index", "Home")
-    [<Authorize>]
+    [<Authorize(Policy = "CuratorOnly")>]
     member this.MessageToGroup (id_group: int) =
         this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
         this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        this.ViewData.["id_group"] <- id_group
         this.View(new MessageToGroupModel(id_group = id_group))
-    [<Authorize>]
+    [<Authorize(Policy = "CuratorOnly")>]
     [<HttpPost>]
     member this.MessageToGroup (model: MessageToGroupModel) =
         let students = 
@@ -254,4 +258,24 @@ type FunctionsController (context: IMyDBContext, mes: IMessager) =
                 printfn "Error in message to group(%d): missing e_mails" model.id_group
         else
             printfn "Error in message to group(%d): missing students" model.id_group
+        this.RedirectToAction("Index", "Home")
+    [<Authorize(Policy = "CuratorOnly")>]
+    member this.MessageToStudent (id_student: int) =
+        this.ViewData.["IsAuthenticated"] <- this.User.Identity.IsAuthenticated
+        this.ViewData.["FIO"] <- this.ctx.GetFIO this.User.Identity.Name
+        //printfn "id_student in \"MessageToStudent\": %A" id_student
+        this.ViewData.["id_student"] <- id_student
+        this.View(new MessageToStudentModel(id_student = id_student))
+    [<Authorize(Policy = "CuratorOnly")>]
+    [<HttpPost>]
+    member this.MessageToStudent (model: MessageToStudentModel) =
+        let student = this.ctx.GetPeoples |> Seq.filter (fun p -> p.id_man = model.id_student) |> Seq.tryHead
+        if student.IsSome then
+            let student_data = seq { yield (this.ctx.GetFIO student.Value.id_man, student.Value.e_mail) }
+            if String.IsNullOrEmpty(student.Value.e_mail) |> not then
+                this.messager.SendMessage model.message_subject model.message_body student_data
+            else
+                printfn "Error in message to student(%d): missing e_mails" model.id_student
+        else
+            printfn "Error in message to student(%d): missing students" model.id_student
         this.RedirectToAction("Index", "Home")

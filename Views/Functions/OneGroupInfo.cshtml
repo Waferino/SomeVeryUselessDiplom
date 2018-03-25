@@ -3,6 +3,8 @@
     ViewData["Title"] = string.Format("Студенты группы {0}", ViewData["Group_name"]);
     var Head = Model.First();
     int row_index = 1;
+    bool IsAuthenticated = (bool)ViewData["IsAuthenticated"];
+    bool IsCurator = IsAuthenticated? (bool)ViewData["IsCurator"] : false;
 }
 <h3>@ViewData["Title"]:</h3>
 <table class="table">
@@ -13,6 +15,7 @@
         {
             <th scope="col">@e.PrName</th>
         }
+        <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
@@ -24,6 +27,10 @@
                 {
                     <td>@e.PrValue</td>
                 }
+            @if(IsCurator)
+            {
+                <td><a asp-controller="Functions" asp-action="MessageToStudent" asp-route-id_student=@(row.First().PrValue) class="btn btn-primary" >Написать</a></td>
+            }
           </tr>
       }
   </tbody>
