@@ -18,10 +18,11 @@ open Microsoft.AspNetCore.Http.Extensions
 open Starikov
 
 [<Authorize>]
-type AccountController (context: IMyDBContext) =
+type AccountController (context: IMyDBContext, arh: IAccountRegistrationHelper) =
     inherit Controller()
 
     member val ctx = context with get
+    member val AccRegHelper = arh with get
 
     [<HttpGet>]
     [<AllowAnonymous>]
@@ -49,7 +50,7 @@ type AccountController (context: IMyDBContext) =
             let acc_op = this.ctx.GetAccounts |> Seq.filter (fun a -> user.id_man = a.id_man) |> Seq.tryHead
             if acc_op.IsSome then this.RedirectToAction("Register", regInfo)
             else
-                let specialWord_curator = "ЯКуратор!Честно!"
+                let specialWord_curator = this.AccRegHelper.GetCuratorsKeyWord
                 let acc = new Starikov.dbModels.Account(id_man = user.id_man, Email = regInfo.Email.ToLowerInvariant(), Password = regInfo.Password.ToLowerInvariant(), Role = "student", date_of_change = System.DateTime.Now.ToString("MM-dd-yyyy"))
                 if regInfo.SpecialWord |> isNull |> not && regInfo.SpecialWord.ToLowerInvariant() = specialWord_curator.ToLowerInvariant() then acc.Role <- "curator"
                 let res = this.ctx.InsertAccount acc

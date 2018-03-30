@@ -16,7 +16,7 @@
     <Compile Include="Models/Commands.fs" />
     <Compile Include="Infrastructure/SessionExtensions.fs" />
     <Compile Include="Models/Interfaces.fs" />
-    <Compile Include="Models\ProjectClasses.fs" />
+    <Compile Include="Models/ProjectClasses.fs" />
     <Compile Include="Models/CafedraDBContext.fs" />
     <Compile Include="Controllers/HomeController.fs" />
     <Compile Include="Controllers/AccountController.fs" />

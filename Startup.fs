@@ -30,6 +30,7 @@ type Startup private () =
         //let token = Path.Combine(AppContext.BaseDirectory, "appsettings.json") |> JsonModule.GetBody |> fun body -> new JsonModule.JSON(body)
         services.AddSingleton<IMyDBContext>(new CafedraDBContext(this.Configuration.["Data:Default:ConnectionString"])) |> ignore
         services.AddSingleton<IMessager>(new Messager((this.Configuration.["Messaging:Default:Email"]), (this.Configuration.["Messaging:Default:Password"]))) |> ignore
+        services.AddSingleton<IAccountRegistrationHelper>(new AccountRegistrationHelper((this.Configuration.["RegistrationKeyWords:Default:ForAdmins"]), (this.Configuration.["RegistrationKeyWords:Default:ForCurators"]))) |> ignore
         services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))) |> ignore
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(fun options ->
             options.LoginPath <- new Microsoft.AspNetCore.Http.PathString("/Account/Login")

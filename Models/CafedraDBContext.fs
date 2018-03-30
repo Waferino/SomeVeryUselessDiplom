@@ -313,7 +313,7 @@ type CafedraDBContext(connectionString: string) =
             //if check (a.alter_lang, da.alter_lang) then abP. <- a.alter_lang
             //if check (a.Bonuses, da.Bonuses) then abP. <- a.Bonuses
             //if check (a.educationType, da.educationType) then abP. <- a.educationType
-            //if check (a.dealNumber, da.dealNumber) then abP. <- a.dealNumber
+            if check (a.dealNumber, da.dealNumber) then abS.number_kontrakta <- a.dealNumber
             //if check (a.dealStartDate, da.dealStartDate) then abP. <- a.dealStartDate
             //if check (a.whoPay, da.whoPay) then abP. <- a.whoPay
             //if check (a.pastSport, da.pastSport) then abP. <- a.pastSport

@@ -11,7 +11,6 @@ type IBaseSQLCommands =
     abstract member Insert : string -> string -> string -> string
     abstract member Update : string -> string -> string -> string
     abstract member GetPK : System.Type -> int
-
 type IMyDBContext =
     abstract member Remove : 'T -> string
     abstract member GetPeoples : seq<People>
@@ -32,3 +31,6 @@ type IMyDBContext =
     abstract member SetAnceteData : string -> Anceta -> bool
 type IMessager =
     abstract member SendMessage : string -> string -> seq<string * string> -> unit
+type IAccountRegistrationHelper =
+    abstract member GetCuratorsKeyWord : string
+    abstract member GetAdminsKeyWord : string    
