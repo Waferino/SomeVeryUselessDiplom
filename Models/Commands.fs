@@ -1,6 +1,5 @@
 namespace Starikov
 open System
-open System
 open System.Collections
 
 module Commands =
